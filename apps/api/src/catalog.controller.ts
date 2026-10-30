@@ -52,7 +52,8 @@ export class CatalogController {
   }
 
   @Get('categories')
-  categories() {
+  async categories() {
+    await this.store.sync();
     return CATEGORIES.map((c) => ({
       ...c,
       count: this.store.products.filter((p) =>
@@ -67,38 +68,44 @@ export class CatalogController {
   }
 
   @Get('campaigns')
-  campaigns() {
+  async campaigns() {
+    await this.store.sync();
     return this.store.campaigns.filter((c) => c.active);
   }
 
   @Get('campaigns/all')
   @UseGuards(AuthGuard)
-  allCampaigns() {
+  async allCampaigns() {
+    await this.store.sync();
     return this.store.campaigns;
   }
 
   @Patch('campaigns/:key')
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  patchCampaign(@Param('key') key: string, @Body() body: { active?: boolean }) {
+  async patchCampaign(@Param('key') key: string, @Body() body: { active?: boolean }) {
+    await this.store.sync(0);
     const c = this.store.campaigns.find((x) => x.key === key);
     if (!c) throw new NotFoundException(`No campaign '${key}'`);
     if (typeof body.active === 'boolean') c.active = body.active;
+    await this.store.persist();
     return c;
   }
 
   @Get('zones')
-  zones() {
+  async zones() {
+    await this.store.sync();
     return this.store.zones;
   }
 
   @Patch('zones/:key')
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  patchZone(
+  async patchZone(
     @Param('key') key: string,
     @Body() body: { fee?: number; eta?: string; disabled?: boolean },
   ) {
+    await this.store.sync(0);
     const z = this.store.zones.find((x) => x.key === key);
     if (!z) throw new NotFoundException(`No zone '${key}'`);
     if (body.fee != null) {
@@ -108,11 +115,12 @@ export class CatalogController {
     }
     if (typeof body.eta === 'string' && body.eta.trim()) z.eta = body.eta.trim();
     if (typeof body.disabled === 'boolean') z.disabled = body.disabled || undefined;
+    await this.store.persist();
     return z;
   }
 
   @Get('products')
-  products(
+  async products(
     @Query('cat') cat?: string,
     @Query('sub') sub?: string,
     @Query('q') q?: string,
@@ -120,6 +128,7 @@ export class CatalogController {
     @Query('inStock') inStock?: string,
     @Query('isNew') isNew?: string,
   ) {
+    await this.store.sync();
     let list = [...this.store.products];
 
     if (cat === 'seasonal') {
@@ -160,8 +169,9 @@ export class CatalogController {
   }
 
   @Get('products/:id')
-  product(@Param('id') id: string) {
-    const p = this.store.findProduct(id);
+  async product(@Param('id') id: string) {
+    await this.store.sync();
+    const p = await this.store.findProductFresh(id);
     if (!p) throw new NotFoundException(`No product '${id}'`);
     const bundleItems = (p.includes ?? [])
       .map((bid) => this.store.findProduct(bid))
@@ -181,7 +191,8 @@ export class CatalogController {
   @Post('products')
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  createProduct(@Body() input: ProductInput) {
+  async createProduct(@Body() input: ProductInput) {
+    await this.store.sync(0);
     const data = this.validateProduct(input, true);
     const product: Product = {
       id: this.store.nextProductId(),
@@ -189,27 +200,33 @@ export class CatalogController {
       ...data,
     } as Product;
     this.store.products.push(product);
+    await this.store.persist();
     return this.withTotals(product);
   }
 
   @Patch('products/:id')
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  updateProduct(@Param('id') id: string, @Body() input: ProductInput) {
-    const p = this.store.findProduct(id);
+  async updateProduct(@Param('id') id: string, @Body() input: ProductInput) {
+    await this.store.sync(0);
+    const p = await this.store.findProductFresh(id);
     if (!p) throw new NotFoundException(`No product '${id}'`);
     const data = this.validateProduct({ ...this.asInput(p), ...input }, false);
     Object.assign(p, data);
+    await this.store.persist();
     return this.withTotals(p);
   }
 
   @Delete('products/:id')
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  deleteProduct(@Param('id') id: string) {
+  async deleteProduct(@Param('id') id: string) {
+    await this.store.sync(0);
+    await this.store.findProductFresh(id);
     const idx = this.store.products.findIndex((x) => x.id === id);
     if (idx < 0) throw new NotFoundException(`No product '${id}'`);
     const [removed] = this.store.products.splice(idx, 1);
+    await this.store.persist();
     return { ok: true, id: removed.id };
   }
 

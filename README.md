@@ -61,9 +61,12 @@ Living, or Stationery anywhere.
 
 ## Demo-build shortcuts (replace for production)
 
-- **Storage** is in-memory in the API (seeded with 30 days of plausible order history so the
-  dashboard has data). Swap `StoreService` for PostgreSQL + Prisma with row-locked stock decrements;
-  the REST contract (`openapi.yaml`) stays the same.
+- **Storage**: the API keeps a working copy in memory and persists every change to a
+  **Vercel Blob** JSON state (`xivoo-data` store) — admin CRUD, sign-ups and orders survive
+  restarts and serverless instances. Instances re-sync on reads (≤4s lag) and before every
+  mutation; concurrent writes from different instances within a couple of seconds can still
+  race (last writer wins). For real traffic swap `PersistenceService` for PostgreSQL + Prisma;
+  the REST contract stays the same. Local dev persists to `apps/api/.data/state.json`
 - **Auth is demo-grade** — in-memory users with plain-text demo passwords and random session tokens.
   Production needs hashed passwords, a session store and per-customer order scoping (order detail is
   public here so confirmation pages work for guests). Storefront customer accounts are still to come.

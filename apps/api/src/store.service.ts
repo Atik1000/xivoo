@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnModuleInit } from '@nestjs/common';
+import { createHash } from 'crypto';
 import {
   CAMPAIGNS,
   COUPONS,
@@ -13,6 +14,7 @@ import {
   type OrderStatus,
   type Product,
 } from '@xivoo/shared';
+import { PersistenceService } from './persistence.service';
 
 /**
  * In-memory data store for the demo build — the single mutable source of truth
@@ -20,18 +22,122 @@ import {
  * copies; the seed only provides the starting state. Production replaces this
  * with PostgreSQL + Prisma behind the same service surface.
  */
+export type AdminRole = 'owner' | 'manager' | 'support';
+
+export interface StoredUser {
+  email: string;
+  name: string;
+  role: AdminRole;
+  passHash: string;
+}
+
+const SECRET = process.env.AUTH_SECRET ?? 'xivoo-demo-secret';
+export const hashPassword = (pw: string): string =>
+  createHash('sha256').update(`${SECRET}:${pw}`).digest('hex');
+
+interface AppState {
+  v: 1;
+  savedAt: string;
+  products: Product[];
+  coupons: Coupon[];
+  campaigns: Campaign[];
+  zones: DeliveryZone[];
+  orders: Order[];
+  users: StoredUser[];
+  orderSeq: number;
+  productSeq: number;
+}
+
+const replaceAll = <T,>(target: T[], items: T[]): void => {
+  target.length = 0;
+  target.push(...items);
+};
+
 @Injectable()
-export class StoreService {
+export class StoreService implements OnModuleInit {
   readonly products: Product[] = PRODUCTS.map((p) => ({ ...p, stock: { ...p.stock } }));
   readonly coupons: Coupon[] = COUPONS.map((c) => ({ ...c }));
   readonly campaigns: Campaign[] = CAMPAIGNS.map((c) => ({ ...c }));
   readonly zones: DeliveryZone[] = ZONES.map((z) => ({ ...z }));
   readonly orders: Order[] = [];
+  readonly users: StoredUser[] = [
+    { email: 'owner@xivoo.test', name: 'Rifat Hossain', role: 'owner', passHash: hashPassword('xivoo-owner') },
+    { email: 'manager@xivoo.test', name: 'Nadia Karim', role: 'manager', passHash: hashPassword('xivoo-manager') },
+    { email: 'support@xivoo.test', name: 'Sabbir Ahmed', role: 'support', passHash: hashPassword('xivoo-support') },
+  ];
   private seq = 1001;
   private productSeq = 1;
+  private lastSync = 0;
+
+  /** Load persisted state on boot; seed and persist a baseline on first ever run. */
+  async onModuleInit(): Promise<void> {
+    const loaded = await this.syncNow();
+    if (!loaded) await this.persist();
+  }
+
+  /** Refresh from durable storage when the cache is older than maxAgeMs. */
+  async sync(maxAgeMs = 4000): Promise<void> {
+    if (Date.now() - this.lastSync < maxAgeMs) return;
+    await this.syncNow();
+  }
+
+  private async syncNow(): Promise<boolean> {
+    const s = await this.persistence.load<AppState>();
+    this.lastSync = Date.now();
+    if (!s || s.v !== 1) return false;
+    replaceAll(this.products, s.products);
+    replaceAll(this.coupons, s.coupons);
+    replaceAll(this.campaigns, s.campaigns);
+    replaceAll(this.zones, s.zones);
+    replaceAll(this.orders, s.orders);
+    replaceAll(this.users, s.users);
+    this.seq = s.orderSeq;
+    this.productSeq = s.productSeq;
+    return true;
+  }
+
+  /** Write the current state through to durable storage. Await after every mutation. */
+  async persist(): Promise<void> {
+    await this.persistence.save({
+      v: 1,
+      savedAt: new Date().toISOString(),
+      products: this.products,
+      coupons: this.coupons,
+      campaigns: this.campaigns,
+      zones: this.zones,
+      orders: this.orders,
+      users: this.users,
+      orderSeq: this.seq,
+      productSeq: this.productSeq,
+    } satisfies AppState);
+    this.lastSync = Date.now();
+  }
 
   findProduct(id: string): Product | undefined {
     return this.products.find((x) => x.id === id);
+  }
+
+  /**
+   * Find a product, re-reading durable state (with short back-off) when it is
+   * missing — covers replication lag between serverless instances.
+   */
+  async findProductFresh(id: string, retries = 3): Promise<Product | undefined> {
+    for (let i = 0; ; i++) {
+      const p = this.findProduct(id);
+      if (p || i >= retries) return p;
+      await new Promise((r) => setTimeout(r, 400 * (i + 1)));
+      await this.syncNow();
+    }
+  }
+
+  /** Same freshness guarantee for orders (admin status changes right after checkout). */
+  async findOrderFresh(no: string, retries = 3): Promise<Order | undefined> {
+    for (let i = 0; ; i++) {
+      const o = this.orders.find((x) => x.no === no);
+      if (o || i >= retries) return o;
+      await new Promise((r) => setTimeout(r, 400 * (i + 1)));
+      await this.syncNow();
+    }
   }
 
   nextProductId(): string {
@@ -69,7 +175,7 @@ export class StoreService {
     return `XIV-${y}${m}${d}-${this.seq++}`;
   }
 
-  constructor() {
+  constructor(private readonly persistence: PersistenceService) {
     this.seedOrders();
   }
 

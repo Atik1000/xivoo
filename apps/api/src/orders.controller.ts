@@ -40,7 +40,8 @@ export class OrdersController {
 
   @Get()
   @UseGuards(AuthGuard)
-  list(@Query('status') status?: string, @Query('q') q?: string) {
+  async list(@Query('status') status?: string, @Query('q') q?: string) {
+    await this.store.sync();
     let out = this.store.orders;
     if (status) out = out.filter((o) => o.status === status);
     if (q) {
@@ -61,7 +62,8 @@ export class OrdersController {
   }
 
   @Get(':no')
-  get(@Param('no') no: string) {
+  async get(@Param('no') no: string) {
+    await this.store.sync();
     const o = this.store.orders.find((x) => x.no === no);
     if (!o) throw new NotFoundException(`No order ${no}`);
     return o;
@@ -70,8 +72,9 @@ export class OrdersController {
   @Patch(':no/status')
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  setStatus(@Param('no') no: string, @Body() body: { status?: OrderStatus }) {
-    const o = this.store.orders.find((x) => x.no === no);
+  async setStatus(@Param('no') no: string, @Body() body: { status?: OrderStatus }) {
+    await this.store.sync(0);
+    const o = await this.store.findOrderFresh(no);
     if (!o) throw new NotFoundException(`No order ${no}`);
     const next = body.status;
     if (!next || !FORWARD[o.status]?.includes(next)) {
@@ -80,11 +83,13 @@ export class OrdersController {
       );
     }
     o.status = next;
+    await this.store.persist();
     return o;
   }
 
   @Post()
-  create(@Body() input: CreateOrderInput): Order {
+  async create(@Body() input: CreateOrderInput): Promise<Order> {
+    await this.store.sync(0);
     const errors: Record<string, string> = {};
     const name = (input.customer?.name ?? '').trim();
     if (name.length < 2) errors.name = 'Please enter the full name.';
@@ -177,6 +182,7 @@ export class OrdersController {
       total: subtotal - discount + zone!.fee!,
     };
     this.store.orders.unshift(order);
+    await this.store.persist();
     return order;
   }
 }

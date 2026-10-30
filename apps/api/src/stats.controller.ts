@@ -11,7 +11,8 @@ export class StatsController {
   constructor(private readonly store: StoreService) {}
 
   @Get('summary')
-  summary(): StatsSummary {
+  async summary(): Promise<StatsSummary> {
+    await this.store.sync();
     const orders = this.store.orders;
     const sold = orders.filter((o) => SOLD_STATUSES.has(o.status));
 

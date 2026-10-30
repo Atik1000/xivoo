@@ -20,14 +20,16 @@ export class CouponsController {
   constructor(private readonly store: StoreService) {}
 
   @Get()
-  list() {
+  async list() {
+    await this.store.sync();
     return this.store.coupons;
   }
 
   /** One coupon per order, no stacking. Discount = floor(subtotal × pct), capped. */
   @Post('validate')
   @HttpCode(200)
-  validate(@Body() body: { code?: string; subtotal?: number }) {
+  async validate(@Body() body: { code?: string; subtotal?: number }) {
+    await this.store.sync(2000);
     const code = (body.code ?? '').trim().toUpperCase();
     const subtotal = Math.max(0, Math.floor(Number(body.subtotal ?? 0)));
     const c = this.store.coupons.find((x) => x.code === code && x.active);
@@ -49,7 +51,8 @@ export class CouponsController {
   @Post()
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  create(@Body() body: Partial<Coupon>) {
+  async create(@Body() body: Partial<Coupon>) {
+    await this.store.sync(0);
     const code = (body.code ?? '').trim().toUpperCase().replace(/\s+/g, '');
     const errors: Record<string, string> = {};
     if (!/^[A-Z0-9]{4,16}$/.test(code)) errors.code = 'Code: 4–16 letters/numbers.';
@@ -77,26 +80,31 @@ export class CouponsController {
         : `${fmt(value)} off orders over ${fmt(min)}`;
     const coupon: Coupon = { code, type: type!, value, min, max, label, until, active: body.active !== false };
     this.store.coupons.push(coupon);
+    await this.store.persist();
     return coupon;
   }
 
   @Patch(':code')
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  patch(@Param('code') codeParam: string, @Body() body: { active?: boolean }) {
+  async patch(@Param('code') codeParam: string, @Body() body: { active?: boolean }) {
+    await this.store.sync(0);
     const c = this.store.coupons.find((x) => x.code === codeParam.toUpperCase());
     if (!c) throw new NotFoundException(`No coupon ${codeParam}`);
     if (typeof body.active === 'boolean') c.active = body.active;
+    await this.store.persist();
     return c;
   }
 
   @Delete(':code')
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  remove(@Param('code') codeParam: string) {
+  async remove(@Param('code') codeParam: string) {
+    await this.store.sync(0);
     const idx = this.store.coupons.findIndex((x) => x.code === codeParam.toUpperCase());
     if (idx < 0) throw new NotFoundException(`No coupon ${codeParam}`);
     this.store.coupons.splice(idx, 1);
+    await this.store.persist();
     return { ok: true };
   }
 }

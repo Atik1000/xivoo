@@ -1,28 +1,14 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHmac, timingSafeEqual } from 'crypto';
+import { StoreService, hashPassword, type AdminRole } from './store.service';
 
-export type AdminRole = 'owner' | 'manager' | 'support';
+export type { AdminRole } from './store.service';
 
 export interface AdminUser {
   email: string;
   name: string;
   role: AdminRole;
 }
-
-interface SeedUser extends AdminUser {
-  password: string;
-}
-
-/**
- * Demo credentials for the in-memory build — see the root README ("Admin access").
- * Production replaces this with hashed passwords in the database; the token
- * contract (Bearer) stays the same.
- */
-const SEED_USERS: SeedUser[] = [
-  { email: 'owner@xivoo.test', name: 'Rifat Hossain', role: 'owner', password: 'xivoo-owner' },
-  { email: 'manager@xivoo.test', name: 'Nadia Karim', role: 'manager', password: 'xivoo-manager' },
-  { email: 'support@xivoo.test', name: 'Sabbir Ahmed', role: 'support', password: 'xivoo-support' },
-];
 
 const TOKEN_TTL_MS = 12 * 3600_000;
 /** Demo default — set AUTH_SECRET in any shared deployment. */
@@ -32,41 +18,50 @@ const b64url = (s: string) => Buffer.from(s, 'utf8').toString('base64url');
 const sign = (payload: string) => createHmac('sha256', SECRET).update(payload).digest('base64url');
 
 /**
- * Stateless HMAC-signed tokens (payload.signature) so sign-ins survive restarts
- * and serverless instances — no session store needed for the demo.
+ * Stateless HMAC-signed tokens (payload.signature); users live in the durable
+ * store, so sign-ups survive restarts and are visible to every instance.
+ * Passwords are stored as salted SHA-256 hashes (bcrypt + rate limits for
+ * production).
  */
 @Injectable()
 export class AuthService {
-  /** Mutable in-memory user list; starts with the demo accounts. */
-  private readonly users: SeedUser[] = SEED_USERS.map((u) => ({ ...u }));
+  constructor(private readonly store: StoreService) {}
 
-  /**
-   * Demo signup: creates a manager account so new team members can try the
-   * full panel. Production would hash the password and queue role approval.
-   */
-  signup(name: string, email: string, password: string): { token: string; user: AdminUser } {
+  private issue(user: AdminUser): { token: string; user: AdminUser } {
+    const payload = b64url(JSON.stringify({ ...user, exp: Date.now() + TOKEN_TTL_MS }));
+    return { token: `${payload}.${sign(payload)}`, user };
+  }
+
+  /** Demo signup: creates a manager account so new team members can try the full panel. */
+  async signup(name: string, email: string, password: string): Promise<{ token: string; user: AdminUser }> {
+    await this.store.sync(0);
     const errors: Record<string, string> = {};
     const cleanName = (name ?? '').trim();
     const cleanEmail = (email ?? '').trim().toLowerCase();
     if (cleanName.length < 2) errors.name = 'Please enter your full name.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) errors.email = 'Enter a valid email address.';
-    else if (this.users.some((u) => u.email === cleanEmail)) errors.email = 'That email already has an account.';
+    else if (this.store.users.some((u) => u.email === cleanEmail)) errors.email = 'That email already has an account.';
     if ((password ?? '').length < 6) errors.password = 'Password needs at least 6 characters.';
     if (Object.keys(errors).length) {
       throw new BadRequestException({ message: 'Please fix the highlighted fields.', errors });
     }
-    this.users.push({ name: cleanName, email: cleanEmail, password, role: 'manager' });
-    return this.login(cleanEmail, password);
+    this.store.users.push({
+      name: cleanName,
+      email: cleanEmail,
+      role: 'manager',
+      passHash: hashPassword(password),
+    });
+    await this.store.persist();
+    return this.issue({ email: cleanEmail, name: cleanName, role: 'manager' });
   }
 
-  login(email: string, password: string): { token: string; user: AdminUser } {
-    const u = this.users.find((x) => x.email === (email ?? '').trim().toLowerCase());
-    if (!u || u.password !== password) {
+  async login(email: string, password: string): Promise<{ token: string; user: AdminUser }> {
+    await this.store.sync(3000);
+    const u = this.store.users.find((x) => x.email === (email ?? '').trim().toLowerCase());
+    if (!u || u.passHash !== hashPassword(password ?? '')) {
       throw new UnauthorizedException('Wrong email or password.');
     }
-    const user: AdminUser = { email: u.email, name: u.name, role: u.role };
-    const payload = b64url(JSON.stringify({ ...user, exp: Date.now() + TOKEN_TTL_MS }));
-    return { token: `${payload}.${sign(payload)}`, user };
+    return this.issue({ email: u.email, name: u.name, role: u.role });
   }
 
   logout(_token: string): void {
