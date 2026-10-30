@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Space_Grotesk, Inter } from 'next/font/google';
+import { Chakra_Petch, Manrope } from 'next/font/google';
 import Analytics from '@/components/analytics';
 import ChatButtons from '@/components/chat-buttons';
 import Footer from '@/components/footer';
@@ -9,16 +9,16 @@ import { StoreProvider } from '@/components/store';
 import { getCampaigns, getCategories, getProducts, getSubcategories } from '@/lib/api';
 import './globals.css';
 
-const space = Space_Grotesk({
+const chakra = Chakra_Petch({
   subsets: ['latin'],
-  variable: '--font-space',
+  variable: '--font-chakra',
   weight: ['500', '600', '700'],
 });
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ['latin'],
-  variable: '--font-inter',
-  weight: ['400', '500', '600', '700'],
+  variable: '--font-manrope',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -38,7 +38,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   ]);
 
   return (
-    <html lang="en" className={`${space.variable} ${inter.variable}`}>
+    <html lang="en" className={`${chakra.variable} ${manrope.variable}`}>
       <body>
         <StoreProvider>
           <UtilityBar />

@@ -166,7 +166,7 @@ export default function CartPage() {
         </div>
 
         {/* Summary */}
-        <aside className="sticky top-[140px] w-full flex-[1_1_300px] rounded-[20px] border border-line bg-white p-[22px] lg:max-w-[360px]">
+        <aside className="sticky top-[96px] w-full flex-[1_1_300px] rounded-[20px] border border-line bg-white p-[22px] lg:max-w-[360px]">
           <h2 className="text-[17px] font-bold">Summary</h2>
 
           {coupon ? (

@@ -218,7 +218,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Summary */}
-        <motion.aside {...card(1)} className="sticky top-[140px] w-full flex-[1_1_300px] rounded-[20px] border border-line bg-white p-[22px] lg:max-w-[360px]">
+        <motion.aside {...card(1)} className="sticky top-[96px] w-full flex-[1_1_300px] rounded-[20px] border border-line bg-white p-[22px] lg:max-w-[360px]">
           <h2 className="text-[17px] font-bold">Your order</h2>
           <ul className="mt-4 space-y-3">
             {(lines ?? []).map((l) => (

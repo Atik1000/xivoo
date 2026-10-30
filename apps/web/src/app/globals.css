@@ -24,8 +24,8 @@
   --color-footer-text: #E8EAED;
   --color-footer-legal: #9AA0A6;
 
-  --font-display: var(--font-space), ui-sans-serif, sans-serif;
-  --font-body: var(--font-inter), ui-sans-serif, sans-serif;
+  --font-display: var(--font-chakra), ui-sans-serif, sans-serif;
+  --font-body: var(--font-manrope), ui-sans-serif, sans-serif;
 
   --animate-marquee: marquee 28s linear infinite;
   --animate-sheen: sheen 9s ease-in-out infinite;
@@ -67,4 +67,16 @@ body {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Electronic touches */
+.circuit-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(120% 90% at 50% 0%, black 30%, transparent 85%);
+}
+.glow-brand {
+  box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 10px 40px -8px rgba(255, 106, 0, 0.55);
 }

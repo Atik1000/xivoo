@@ -38,10 +38,10 @@ export const HeartIcon = ({ filled, ...p }: LucideProps & { filled?: boolean }) 
 /** Brand mark: the Xivoo X — black arms with the orange swoosh. */
 export const LogoMark = ({ size = 36 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden>
-    <rect width="40" height="40" rx="10" fill="#16181A" />
-    <path d="M11 11l7 7" stroke="#FFFFFF" strokeWidth="5.5" strokeLinecap="round" />
-    <path d="M23 23l6.5 6.5" stroke="#FFFFFF" strokeWidth="5.5" strokeLinecap="round" />
-    <path d="M9.5 30.5C14 27 24 15 30.5 9.5" stroke="#FF6A00" strokeWidth="5.5" strokeLinecap="round" fill="none" />
+    <rect width="40" height="40" rx="10" fill="#FF6A00" />
+    <path d="M11 11l7 7" stroke="#111315" strokeWidth="5.5" strokeLinecap="round" />
+    <path d="M23 23l6.5 6.5" stroke="#111315" strokeWidth="5.5" strokeLinecap="round" />
+    <path d="M9.5 30.5C14 27 24 15 30.5 9.5" stroke="#FFFFFF" strokeWidth="5.5" strokeLinecap="round" fill="none" />
   </svg>
 );
 
