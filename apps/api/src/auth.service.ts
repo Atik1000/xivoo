@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 export type AdminRole = 'owner' | 'manager' | 'support';
@@ -37,8 +37,30 @@ const sign = (payload: string) => createHmac('sha256', SECRET).update(payload).d
  */
 @Injectable()
 export class AuthService {
+  /** Mutable in-memory user list; starts with the demo accounts. */
+  private readonly users: SeedUser[] = SEED_USERS.map((u) => ({ ...u }));
+
+  /**
+   * Demo signup: creates a manager account so new team members can try the
+   * full panel. Production would hash the password and queue role approval.
+   */
+  signup(name: string, email: string, password: string): { token: string; user: AdminUser } {
+    const errors: Record<string, string> = {};
+    const cleanName = (name ?? '').trim();
+    const cleanEmail = (email ?? '').trim().toLowerCase();
+    if (cleanName.length < 2) errors.name = 'Please enter your full name.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) errors.email = 'Enter a valid email address.';
+    else if (this.users.some((u) => u.email === cleanEmail)) errors.email = 'That email already has an account.';
+    if ((password ?? '').length < 6) errors.password = 'Password needs at least 6 characters.';
+    if (Object.keys(errors).length) {
+      throw new BadRequestException({ message: 'Please fix the highlighted fields.', errors });
+    }
+    this.users.push({ name: cleanName, email: cleanEmail, password, role: 'manager' });
+    return this.login(cleanEmail, password);
+  }
+
   login(email: string, password: string): { token: string; user: AdminUser } {
-    const u = SEED_USERS.find((x) => x.email === (email ?? '').trim().toLowerCase());
+    const u = this.users.find((x) => x.email === (email ?? '').trim().toLowerCase());
     if (!u || u.password !== password) {
       throw new UnauthorizedException('Wrong email or password.');
     }

@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { CATEGORIES, PRODUCTS, StatsSummary, productImg } from '@xivoo/shared';
+import { CATEGORIES, StatsSummary, sizedImg } from '@xivoo/shared';
 import { AuthGuard } from './auth.guard';
 import { StoreService } from './store.service';
 
@@ -25,7 +25,7 @@ export class StatsController {
     const byProductMap = new Map<string, { units: number; revenue: number }>();
     for (const o of sold) {
       for (const it of o.items) {
-        const p = PRODUCTS.find((x) => x.id === it.productId);
+        const p = this.store.findProduct(it.productId);
         if (!p) continue;
         const cat = byCatMap.get(p.cat) ?? { revenue: 0, units: 0 };
         cat.revenue += it.lineTotal;
@@ -52,11 +52,11 @@ export class StatsController {
     }
 
     const lowStock: StatsSummary['lowStock'] = [];
-    for (const p of PRODUCTS) {
+    for (const p of this.store.products) {
       for (const [variant, _] of Object.entries(p.stock)) {
         const left = this.store.stockOf(p, variant);
         if (left <= 3) {
-          lowStock.push({ id: p.id, name: p.name, sub: p.sub, variant, left, img: productImg(p.id, 80, 100) });
+          lowStock.push({ id: p.id, name: p.name, sub: p.sub, variant, left, img: sizedImg(p, 80, 100) });
         }
       }
     }
@@ -80,8 +80,8 @@ export class StatsController {
       revenueByDay: days,
       topProducts: [...byProductMap.entries()]
         .map(([id, v]) => {
-          const p = PRODUCTS.find((x) => x.id === id)!;
-          return { id, name: p.name, sub: p.sub, img: productImg(id, 80, 100), ...v };
+          const p = this.store.findProduct(id);
+          return { id, name: p?.name ?? id, sub: p?.sub ?? '', img: p ? sizedImg(p, 80, 100) : '', ...v };
         })
         .sort((a, b) => b.units - a.units || b.revenue - a.revenue)
         .slice(0, 6),

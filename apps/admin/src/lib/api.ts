@@ -61,16 +61,29 @@ export function useApi<T>(path: string): Fetched<T> {
   return { data, error, loading, reload };
 }
 
-export async function patch<T>(path: string, body: unknown): Promise<T> {
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public errors?: Record<string, string>,
+  ) {
+    super(message);
+  }
+}
+
+async function send<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
-    method: 'PATCH',
+    method,
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify(body),
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
-  const json = await res.json();
+  const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     handleUnauthorized(res.status);
-    throw new Error(json?.message ?? `API ${res.status}`);
+    throw new ApiError(json?.message ?? `API ${res.status}`, json?.errors);
   }
   return json as T;
 }
+
+export const patch = <T,>(path: string, body: unknown): Promise<T> => send('PATCH', path, body);
+export const post = <T,>(path: string, body: unknown): Promise<T> => send('POST', path, body);
+export const del = <T,>(path: string): Promise<T> => send('DELETE', path);

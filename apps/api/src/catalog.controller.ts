@@ -1,14 +1,46 @@
-import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import {
-  CAMPAIGNS,
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
   CATEGORIES,
   COLOR_SWATCHES,
-  PRODUCTS,
-  Product,
   SUBCATEGORIES,
-  ZONES,
+  TONES,
+  type ColorKey,
+  type Product,
+  type ToneKey,
 } from '@xivoo/shared';
+import { AuthGuard, Roles } from './auth.guard';
 import { StoreService } from './store.service';
+
+const CAT_KEYS = ['audio', 'gadgets', 'accessories', 'seasonal', 'combos'] as const;
+
+interface ProductInput {
+  name?: string;
+  cat?: string;
+  sub?: string;
+  price?: number;
+  was?: number | null;
+  stock?: Record<string, number>;
+  colors?: string[];
+  img?: string;
+  desc?: string;
+  details?: string[];
+  warranty?: string | null;
+  isNew?: boolean;
+  season?: string[];
+  tone?: string;
+}
 
 @Controller()
 export class CatalogController {
@@ -21,7 +53,12 @@ export class CatalogController {
 
   @Get('categories')
   categories() {
-    return CATEGORIES;
+    return CATEGORIES.map((c) => ({
+      ...c,
+      count: this.store.products.filter((p) =>
+        c.key === 'seasonal' ? (p.season ?? []).length > 0 : p.cat === c.key,
+      ).length,
+    }));
   }
 
   @Get('subcategories')
@@ -31,12 +68,47 @@ export class CatalogController {
 
   @Get('campaigns')
   campaigns() {
-    return CAMPAIGNS.filter((c) => c.active);
+    return this.store.campaigns.filter((c) => c.active);
+  }
+
+  @Get('campaigns/all')
+  @UseGuards(AuthGuard)
+  allCampaigns() {
+    return this.store.campaigns;
+  }
+
+  @Patch('campaigns/:key')
+  @UseGuards(AuthGuard)
+  @Roles('owner', 'manager')
+  patchCampaign(@Param('key') key: string, @Body() body: { active?: boolean }) {
+    const c = this.store.campaigns.find((x) => x.key === key);
+    if (!c) throw new NotFoundException(`No campaign '${key}'`);
+    if (typeof body.active === 'boolean') c.active = body.active;
+    return c;
   }
 
   @Get('zones')
   zones() {
-    return ZONES;
+    return this.store.zones;
+  }
+
+  @Patch('zones/:key')
+  @UseGuards(AuthGuard)
+  @Roles('owner', 'manager')
+  patchZone(
+    @Param('key') key: string,
+    @Body() body: { fee?: number; eta?: string; disabled?: boolean },
+  ) {
+    const z = this.store.zones.find((x) => x.key === key);
+    if (!z) throw new NotFoundException(`No zone '${key}'`);
+    if (body.fee != null) {
+      const fee = Math.floor(Number(body.fee));
+      if (!(fee >= 0)) throw new BadRequestException('Fee must be a non-negative integer.');
+      z.fee = fee;
+    }
+    if (typeof body.eta === 'string' && body.eta.trim()) z.eta = body.eta.trim();
+    if (typeof body.disabled === 'boolean') z.disabled = body.disabled || undefined;
+    return z;
   }
 
   @Get('products')
@@ -48,7 +120,7 @@ export class CatalogController {
     @Query('inStock') inStock?: string,
     @Query('isNew') isNew?: string,
   ) {
-    let list = [...PRODUCTS];
+    let list = [...this.store.products];
 
     if (cat === 'seasonal') {
       list = list.filter((p) => (sub ? p.season?.includes(sub) : (p.season ?? []).length > 0));
@@ -64,25 +136,23 @@ export class CatalogController {
     if (q) {
       const toks = q.toLowerCase().split(/\s+/).filter(Boolean);
       list = list.filter((p) => {
-        const cat = CATEGORIES.find((c) => c.key === p.cat);
+        const c = CATEGORIES.find((x) => x.key === p.cat);
         const hay = [
-          p.name, p.sub, cat?.title ?? '', cat?.crumb ?? '', p.desc,
-          ...p.colors.map((c) => COLOR_SWATCHES[c]?.[0] ?? c),
+          p.name, p.sub, c?.title ?? '', c?.crumb ?? '', p.desc,
+          ...p.colors.map((x) => COLOR_SWATCHES[x]?.[0] ?? x),
           ...(p.season ?? []),
         ].join(' ').toLowerCase();
         return toks.every((t) => hay.includes(t) || hay.includes(t.replace(/s$/, '')));
       });
     }
 
-    let out = list.map((p) => this.withLiveStock(p));
+    let out = list.map((p) => this.withTotals(p));
     if (inStock === 'true') out = out.filter((p) => p.totalStock > 0);
 
     switch (sort) {
       case 'asc': out.sort((a, b) => a.price - b.price); break;
       case 'desc': out.sort((a, b) => b.price - a.price); break;
-      case 'discount':
-        out.sort((a, b) => this.discountPct(b) - this.discountPct(a));
-        break;
+      case 'discount': out.sort((a, b) => this.discountPct(b) - this.discountPct(a)); break;
       default:
         out.sort((a, b) => Number(b.isNew ?? false) - Number(a.isNew ?? false) || b.order - a.order);
     }
@@ -91,25 +161,135 @@ export class CatalogController {
 
   @Get('products/:id')
   product(@Param('id') id: string) {
-    const p = PRODUCTS.find((x) => x.id === id);
+    const p = this.store.findProduct(id);
     if (!p) throw new NotFoundException(`No product '${id}'`);
     const bundleItems = (p.includes ?? [])
-      .map((bid) => PRODUCTS.find((x) => x.id === bid))
+      .map((bid) => this.store.findProduct(bid))
       .filter((x): x is Product => !!x)
-      .map((x) => this.withLiveStock(x));
-    const related = PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4);
-    const topUp = PRODUCTS.filter((x) => x.isNew && x.id !== p.id && !related.includes(x)).slice(
-      0,
-      Math.max(0, 4 - related.length),
-    );
+      .map((x) => this.withTotals(x));
+    const related = this.store.products.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4);
+    const topUp = this.store.products
+      .filter((x) => x.isNew && x.id !== p.id && !related.includes(x))
+      .slice(0, Math.max(0, 4 - related.length));
     return {
-      ...this.withLiveStock(p),
+      ...this.withTotals(p),
       bundleItems,
-      related: [...related, ...topUp].map((x) => this.withLiveStock(x)),
+      related: [...related, ...topUp].map((x) => this.withTotals(x)),
     };
   }
 
-  private withLiveStock(p: Product) {
+  @Post('products')
+  @UseGuards(AuthGuard)
+  @Roles('owner', 'manager')
+  createProduct(@Body() input: ProductInput) {
+    const data = this.validateProduct(input, true);
+    const product: Product = {
+      id: this.store.nextProductId(),
+      order: Math.max(0, ...this.store.products.map((p) => p.order)) + 1,
+      ...data,
+    } as Product;
+    this.store.products.push(product);
+    return this.withTotals(product);
+  }
+
+  @Patch('products/:id')
+  @UseGuards(AuthGuard)
+  @Roles('owner', 'manager')
+  updateProduct(@Param('id') id: string, @Body() input: ProductInput) {
+    const p = this.store.findProduct(id);
+    if (!p) throw new NotFoundException(`No product '${id}'`);
+    const data = this.validateProduct({ ...this.asInput(p), ...input }, false);
+    Object.assign(p, data);
+    return this.withTotals(p);
+  }
+
+  @Delete('products/:id')
+  @UseGuards(AuthGuard)
+  @Roles('owner', 'manager')
+  deleteProduct(@Param('id') id: string) {
+    const idx = this.store.products.findIndex((x) => x.id === id);
+    if (idx < 0) throw new NotFoundException(`No product '${id}'`);
+    const [removed] = this.store.products.splice(idx, 1);
+    return { ok: true, id: removed.id };
+  }
+
+  private asInput(p: Product): ProductInput {
+    return {
+      name: p.name, cat: p.cat, sub: p.sub, price: p.price, was: p.was ?? null,
+      stock: p.stock, colors: p.colors, img: p.img, desc: p.desc, details: p.details,
+      warranty: p.warranty ?? null, isNew: p.isNew ?? false, season: p.season ?? [], tone: p.tone,
+    };
+  }
+
+  private validateProduct(input: ProductInput, _creating: boolean) {
+    const errors: Record<string, string> = {};
+    const name = (input.name ?? '').trim();
+    if (name.length < 3) errors.name = 'Name needs at least 3 characters.';
+
+    const cat = (input.cat ?? '') as Product['cat'];
+    if (!CAT_KEYS.includes(cat as (typeof CAT_KEYS)[number]) || cat === 'seasonal') {
+      errors.cat = 'Pick a category (audio, gadgets, accessories or combos).';
+    }
+
+    const sub = (input.sub ?? '').trim();
+    if (!sub) errors.sub = 'Subcategory is required.';
+
+    const price = Math.floor(Number(input.price));
+    if (!(price > 0)) errors.price = 'Price must be a positive integer (taka).';
+
+    let was: number | undefined;
+    if (input.was != null && input.was !== ('' as unknown)) {
+      was = Math.floor(Number(input.was));
+      if (!(was > 0)) errors.was = 'Original price must be a positive integer.';
+      else if (!errors.price && was <= price) errors.was = 'Original price must be higher than the price.';
+    }
+
+    const stock: Record<string, number> = {};
+    const stockIn = input.stock ?? {};
+    for (const [k, v] of Object.entries(stockIn)) {
+      const n = Math.floor(Number(v));
+      if (!k.trim() || !(n >= 0)) {
+        errors.stock = 'Stock needs variant names with non-negative quantities.';
+        break;
+      }
+      stock[k.trim()] = n;
+    }
+    if (!Object.keys(stock).length && !errors.stock) errors.stock = 'Add at least one variant (e.g. "One size").';
+
+    const colors = (input.colors ?? []).filter((c): c is ColorKey => c in COLOR_SWATCHES);
+
+    const img = (input.img ?? '').trim();
+    if (!/^https:\/\/.+/.test(img)) errors.img = 'Image must be an https:// URL.';
+
+    const desc = (input.desc ?? '').trim();
+    if (desc.length < 10) errors.desc = 'Description needs at least 10 characters.';
+
+    const tone = (input.tone && input.tone in TONES ? input.tone : 'mist') as ToneKey;
+
+    if (Object.keys(errors).length) {
+      throw new BadRequestException({ message: 'Please fix the highlighted fields.', errors });
+    }
+
+    return {
+      name,
+      cat,
+      sub,
+      price,
+      was,
+      stock,
+      colors,
+      img,
+      desc,
+      details: (input.details ?? []).map((d) => String(d).trim()).filter(Boolean),
+      warranty: input.warranty?.trim() || undefined,
+      isNew: !!input.isNew,
+      season: (input.season ?? []).filter((x) => this.store.campaigns.some((c) => c.key === x)),
+      tone,
+      shot: 'admin upload',
+    };
+  }
+
+  private withTotals(p: Product) {
     const stock = this.store.liveStock(p);
     return { ...p, stock, totalStock: Object.values(stock).reduce((a, n) => a + n, 0) };
   }

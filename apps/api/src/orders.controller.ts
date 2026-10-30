@@ -12,14 +12,11 @@ import {
 } from '@nestjs/common';
 import { AuthGuard, Roles } from './auth.guard';
 import {
-  COUPONS,
   CreateOrderInput,
   ORDER_STATUSES,
   Order,
   OrderStatus,
-  PRODUCTS,
-  ZONES,
-  productImg,
+  sizedImg,
   skuOf,
 } from '@xivoo/shared';
 import { StoreService } from './store.service';
@@ -98,7 +95,7 @@ export class OrdersController {
     const email = (input.customer?.email ?? '').trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'That email does not look right.';
 
-    const zone = ZONES.find((z) => z.key === input.delivery?.zone && !z.disabled);
+    const zone = this.store.zones.find((z) => z.key === input.delivery?.zone && !z.disabled);
     if (!zone) errors.zone = 'Choose a delivery zone.';
     if (!(input.delivery?.area ?? '').trim()) errors.area = 'Area or thana is required.';
     if ((input.delivery?.address ?? '').trim().length < 6) errors.address = 'Please enter the full address.';
@@ -114,7 +111,7 @@ export class OrdersController {
     const items: Order['items'] = [];
     try {
       for (const line of input.items) {
-        const p = PRODUCTS.find((x) => x.id === line.productId);
+        const p = this.store.findProduct(line.productId);
         if (!p) throw new BadRequestException({ message: `Unknown product ${line.productId}.` });
         const qty = Math.floor(Number(line.qty));
         if (!(qty >= 1)) throw new BadRequestException({ message: `Invalid quantity for ${p.name}.` });
@@ -133,12 +130,12 @@ export class OrdersController {
           unitPrice: p.price,
           qty,
           lineTotal: p.price * qty,
-          img: productImg(p.id, 120, 150),
+          img: sizedImg(p, 120, 150),
         });
       }
     } catch (e) {
       for (const d of decremented) {
-        const p = PRODUCTS.find((x) => x.id === d.pid)!;
+        const p = this.store.findProduct(d.pid)!;
         this.store.restore(p, d.variant, d.qty);
       }
       throw e;
@@ -148,7 +145,7 @@ export class OrdersController {
     let discount = 0;
     let couponCode: string | undefined;
     if (input.couponCode) {
-      const c = COUPONS.find((x) => x.code === input.couponCode!.toUpperCase() && x.active);
+      const c = this.store.coupons.find((x) => x.code === input.couponCode!.toUpperCase() && x.active);
       if (c && subtotal >= c.min) {
         discount =
           c.type === 'pct'

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { COLOR_SWATCHES, fmt, productImg, type Campaign, type Category } from '@xivoo/shared';
+import { COLOR_SWATCHES, fmt, sizedImg, type Campaign, type Category } from '@xivoo/shared';
 import type { ProductVM } from '@/lib/api';
 import { BagIcon, HeartIcon, LogoMark, SearchIcon } from './icons';
 import { useStore } from './store';
@@ -217,7 +217,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                           className="flex items-center gap-3 rounded-2xl p-2 hover:bg-surface-2"
                         >
                           <span className="relative block h-12 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-2">
-                            <Image src={productImg(p.id, 120, 150)} alt="" fill sizes="40px" className="object-cover" />
+                            <Image src={sizedImg(p, 120, 150)} alt="" fill sizes="40px" className="object-cover" />
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-semibold">{p.name}</span>
@@ -277,7 +277,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                       <Link href={`/p/${fp.id}`} className="group hidden md:block">
                         <span className="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-surface-2">
                           <Image
-                            src={productImg(fp.id, 400, 500)}
+                            src={sizedImg(fp, 400, 500)}
                             alt={fp.name}
                             fill
                             sizes="240px"

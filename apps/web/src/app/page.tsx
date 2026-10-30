@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { CURATED, fmt, productImg } from '@xivoo/shared';
+import { CURATED, fmt, productImg, sizedImg } from '@xivoo/shared';
 import Faq from '@/components/faq';
 import Hero from '@/components/hero';
 import Newsletter from '@/components/newsletter';
@@ -192,11 +192,14 @@ export default async function Home() {
               <RevealItem key={b.id}>
                 <div className="flex h-full flex-col rounded-[24px] border border-line bg-white p-[22px] transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_24px_50px_-28px_rgba(255,106,0,.45)]">
                   <div className="flex gap-2.5">
-                    {(b.includes ?? []).map((id) => (
-                      <span key={id} className="relative block h-[72px] w-[58px] overflow-hidden rounded-lg bg-surface-2">
-                        <Image src={productImg(id, 120, 150)} alt="" fill sizes="58px" className="object-cover" />
-                      </span>
-                    ))}
+                    {(b.includes ?? []).map((id) => {
+                      const inc = products.find((p) => p.id === id);
+                      return (
+                        <span key={id} className="relative block h-[72px] w-[58px] overflow-hidden rounded-lg bg-surface-2">
+                          <Image src={inc ? sizedImg(inc, 120, 150) : productImg(id, 120, 150)} alt="" fill sizes="58px" className="object-cover" />
+                        </span>
+                      );
+                    })}
                     <span className="grid h-[72px] flex-1 place-items-end justify-end">
                       <span className="rounded-md bg-brand-50 px-2 py-1 font-display text-[11px] font-bold uppercase tracking-[0.06em] text-brand">
                         Save {fmt(save)}

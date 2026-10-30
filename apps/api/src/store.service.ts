@@ -1,52 +1,65 @@
 import { Injectable } from '@nestjs/common';
 import {
+  CAMPAIGNS,
   COUPONS,
-  Order,
-  OrderStatus,
   PRODUCTS,
-  Product,
   ZONES,
-  productImg,
   skuOf,
+  sizedImg,
+  type Campaign,
+  type Coupon,
+  type DeliveryZone,
+  type Order,
+  type OrderStatus,
+  type Product,
 } from '@xivoo/shared';
 
 /**
- * In-memory data store for the demo build. Stock mutations and orders live here.
- * Production replaces this with PostgreSQL + Prisma (row locks on stock decrement)
- * behind the same service surface.
+ * In-memory data store for the demo build — the single mutable source of truth
+ * for catalog, coupons, campaigns, zones and orders. Admin CRUD mutates these
+ * copies; the seed only provides the starting state. Production replaces this
+ * with PostgreSQL + Prisma behind the same service surface.
  */
 @Injectable()
 export class StoreService {
-  /** Stock overrides keyed `${productId}|${variant}`; falls back to seed stock. */
-  private stockOverrides = new Map<string, number>();
+  readonly products: Product[] = PRODUCTS.map((p) => ({ ...p, stock: { ...p.stock } }));
+  readonly coupons: Coupon[] = COUPONS.map((c) => ({ ...c }));
+  readonly campaigns: Campaign[] = CAMPAIGNS.map((c) => ({ ...c }));
+  readonly zones: DeliveryZone[] = ZONES.map((z) => ({ ...z }));
   readonly orders: Order[] = [];
   private seq = 1001;
+  private productSeq = 1;
 
-  constructor() {
-    this.seedOrders();
+  findProduct(id: string): Product | undefined {
+    return this.products.find((x) => x.id === id);
+  }
+
+  nextProductId(): string {
+    let id: string;
+    do {
+      id = `x${this.productSeq++}`;
+    } while (this.findProduct(id));
+    return id;
   }
 
   stockOf(p: Product, variant: string): number {
-    const key = `${p.id}|${variant}`;
-    return this.stockOverrides.has(key) ? this.stockOverrides.get(key)! : (p.stock[variant] ?? 0);
+    return p.stock[variant] ?? 0;
   }
 
   liveStock(p: Product): Record<string, number> {
-    const out: Record<string, number> = {};
-    for (const v of Object.keys(p.stock)) out[v] = this.stockOf(p, v);
-    return out;
+    return { ...p.stock };
   }
 
   /** Conditional decrement — returns false (and changes nothing) if insufficient. */
   tryDecrement(p: Product, variant: string, qty: number): boolean {
     const left = this.stockOf(p, variant);
     if (qty > left) return false;
-    this.stockOverrides.set(`${p.id}|${variant}`, left - qty);
+    p.stock[variant] = left - qty;
     return true;
   }
 
   restore(p: Product, variant: string, qty: number): void {
-    this.stockOverrides.set(`${p.id}|${variant}`, this.stockOf(p, variant) + qty);
+    p.stock[variant] = this.stockOf(p, variant) + qty;
   }
 
   nextOrderNo(at: Date): string {
@@ -56,13 +69,17 @@ export class StoreService {
     return `XIV-${y}${m}${d}-${this.seq++}`;
   }
 
+  constructor() {
+    this.seedOrders();
+  }
+
   /**
    * Deterministic demo order history (last 30 days) so the admin dashboard has
-   * real-looking sales data. These are treated as fulfilled history: they do not
-   * draw down current shelf stock.
+   * real-looking sales data. Treated as fulfilled history: it does not draw
+   * down current shelf stock.
    */
   private seedOrders(): void {
-    let s = 20261029;
+    let s = 20261030;
     const rnd = () => {
       // mulberry32
       s |= 0; s = (s + 0x6d2b79f5) | 0;
@@ -90,7 +107,7 @@ export class StoreService {
       const items = [] as Order['items'];
       const chosen = new Set<string>();
       for (let j = 0; j < nItems; j++) {
-        const p = pick(PRODUCTS);
+        const p = pick(this.products);
         if (chosen.has(p.id)) continue;
         chosen.add(p.id);
         const variants = Object.keys(p.stock).filter((v) => p.stock[v] > 0);
@@ -107,7 +124,7 @@ export class StoreService {
           unitPrice: p.price,
           qty,
           lineTotal: p.price * qty,
-          img: productImg(p.id, 120, 150),
+          img: sizedImg(p, 120, 150),
         });
       }
       if (!items.length) continue;
@@ -116,13 +133,13 @@ export class StoreService {
       let discount = 0;
       let couponCode: string | undefined;
       if (rnd() < 0.28) {
-        const c = pick(COUPONS);
+        const c = pick(this.coupons);
         if (subtotal >= c.min) {
           discount = c.type === 'pct' ? Math.min(Math.floor((subtotal * c.value) / 100), c.max ?? Infinity) : c.value;
           couponCode = c.code;
         }
       }
-      const zone = rnd() < 0.6 ? ZONES[0] : rnd() < 0.5 ? ZONES[1] : ZONES[2];
+      const zone = rnd() < 0.6 ? this.zones[0] : rnd() < 0.5 ? this.zones[1] : this.zones[2];
 
       let status: OrderStatus;
       const d = spec.daysAgo;

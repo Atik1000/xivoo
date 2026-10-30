@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { COLOR_SWATCHES, TONES, fmt, productImg, skuOf, type Product } from '@xivoo/shared';
+import { COLOR_SWATCHES, TONES, fmt, hasCrops, sizedImg, skuOf, type Product } from '@xivoo/shared';
 import type { ProductVM } from '@/lib/api';
 import { track } from './analytics';
 import { HeartIcon } from './icons';
@@ -32,6 +32,7 @@ export default function PurchasePanel({ product: p }: { product: PDP }) {
   const off = p.was ? Math.round((1 - p.price / p.was) * 100) : 0;
   const saved = wish.includes(p.id);
   const views = ['entropy', 'top', 'bottom', 'left'];
+  const crops = hasCrops(p.id);
 
   const stockPill =
     left === 0
@@ -64,7 +65,7 @@ export default function PurchasePanel({ product: p }: { product: PDP }) {
         >
           <div className="tone-hatch absolute inset-0" />
           <Image
-            src={productImg(p.id, 800, 1000) + `&crop=${views[img]}`}
+            src={crops ? sizedImg(p, 800, 1000, views[img]) : p.img}
             alt={p.name}
             fill
             priority
@@ -73,7 +74,7 @@ export default function PurchasePanel({ product: p }: { product: PDP }) {
           />
         </motion.div>
         <div className="mt-3 grid grid-cols-4 gap-3">
-          {views.map((v, i) => (
+          {crops && views.map((v, i) => (
             <button
               key={v}
               onClick={() => setImg(i)}
@@ -81,7 +82,7 @@ export default function PurchasePanel({ product: p }: { product: PDP }) {
               className="relative aspect-[4/5] overflow-hidden rounded-[10px] transition-all"
               style={{ boxShadow: img === i ? 'inset 0 0 0 2px #FF6A00' : 'inset 0 0 0 1px #E4E4E4', background: TONES[p.tone] }}
             >
-              <Image src={productImg(p.id, 160, 200) + `&crop=${v}`} alt="" fill sizes="120px" className="object-cover" style={{ opacity: img === i ? 1 : 0.85 }} />
+              <Image src={sizedImg(p, 160, 200, v)} alt="" fill sizes="120px" className="object-cover" style={{ opacity: img === i ? 1 : 0.85 }} />
             </button>
           ))}
         </div>
@@ -115,7 +116,7 @@ export default function PurchasePanel({ product: p }: { product: PDP }) {
                 <li key={b.id}>
                   <Link href={`/p/${b.id}`} className="flex items-center gap-3 hover:text-brand">
                     <span className="relative block h-12 w-10 overflow-hidden rounded-lg bg-surface-2">
-                      <Image src={productImg(b.id, 80, 100)} alt="" fill sizes="40px" className="object-cover" />
+                      <Image src={sizedImg(b, 80, 100)} alt="" fill sizes="40px" className="object-cover" />
                     </span>
                     <span className="flex-1 text-sm font-semibold">{b.name}</span>
                     <span className="text-sm font-bold">{fmt(b.price)}</span>

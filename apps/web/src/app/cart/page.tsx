@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { COLOR_SWATCHES, fmt, productImg } from '@xivoo/shared';
+import { COLOR_SWATCHES, fmt, sizedImg } from '@xivoo/shared';
 import { Reveal } from '@/components/reveal';
 import { lineKey, useStore } from '@/components/store';
 import { useCatalog, validateCoupon, type CouponResult } from '@/lib/client-api';
@@ -125,7 +125,7 @@ export default function CartPage() {
                     className={`flex flex-wrap items-center gap-4 p-5 ${i > 0 ? 'border-t border-line-2' : ''}`}
                   >
                     <Link href={`/p/${l.p.id}`} className="relative block h-[110px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-surface-2">
-                      <Image src={productImg(l.p.id, 176, 220)} alt={l.p.name} fill sizes="88px" className="object-cover" />
+                      <Image src={sizedImg(l.p, 176, 220)} alt={l.p.name} fill sizes="88px" className="object-cover" />
                     </Link>
                     <div className="min-w-[160px] flex-1">
                       <Link href={`/p/${l.p.id}`} className="text-[15px] font-semibold hover:text-brand">{l.p.name}</Link>

@@ -11,6 +11,11 @@ export class AuthController {
     return this.auth.login(body.email ?? '', body.password ?? '');
   }
 
+  @Post('signup')
+  signup(@Body() body: { name?: string; email?: string; password?: string }) {
+    return this.auth.signup(body.name ?? '', body.email ?? '', body.password ?? '');
+  }
+
   @Post('logout')
   logout(@Req() req: AuthedRequest) {
     const header = req.headers.authorization ?? '';

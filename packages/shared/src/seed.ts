@@ -20,6 +20,21 @@ export const IMG = (id: string, w = 600, h = 750, crop = 'entropy'): string =>
 
 export const productImg = (productId: string, w = 600, h = 750): string => IMG(KW[productId], w, h);
 
+/**
+ * Sized image for a product: studio-cropped Unsplash URL for seed products,
+ * the product's own image URL for admin-created ones (crop variants only
+ * apply to the Unsplash set).
+ */
+export const sizedImg = (
+  p: { id: string; img: string },
+  w = 600,
+  h = 750,
+  crop?: string,
+): string => (KW[p.id] ? IMG(KW[p.id], w, h, crop ?? 'entropy') : p.img);
+
+/** Whether a product has the 4 studio crop views (seed catalog only). */
+export const hasCrops = (id: string): boolean => !!KW[id];
+
 type SeedProduct = Omit<Product, 'img' | 'order' | 'colors' | 'season'> &
   Partial<Pick<Product, 'colors' | 'season'>>;
 

@@ -18,10 +18,16 @@ export interface AdminUser {
 
 const KEY = 'xiv_admin_auth_v1';
 
+export interface AuthFail {
+  message: string;
+  errors?: Record<string, string>;
+}
+
 interface AuthCtx {
   user: AdminUser | null;
   ready: boolean;
   login: (email: string, password: string) => Promise<string | null>;
+  signup: (name: string, email: string, password: string) => Promise<AuthFail | null>;
   logout: () => void;
 }
 
@@ -80,6 +86,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
+  const signup = useCallback(
+    async (name: string, email: string, password: string): Promise<AuthFail | null> => {
+      let res: Response;
+      try {
+        res = await fetch(`${API_URL}/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+        });
+      } catch {
+        return { message: 'The API is unreachable — start it with pnpm dev:api.' };
+      }
+      const json = await res.json();
+      if (!res.ok) return { message: json?.message ?? 'Sign-up failed.', errors: json?.errors };
+      localStorage.setItem(KEY, JSON.stringify(json));
+      setUser(json.user);
+      return null;
+    },
+    [],
+  );
+
   const logout = useCallback(() => {
     const token = getToken();
     if (token) {
@@ -92,6 +119,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
-  return <Ctx.Provider value={{ user, ready, login, logout }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ user, ready, login, signup, logout }}>{children}</Ctx.Provider>;
 }
 
