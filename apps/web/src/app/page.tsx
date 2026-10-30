@@ -2,6 +2,7 @@ import PImg from '@/components/pimg';
 import Link from 'next/link';
 import { CURATED, fmt, productImg, sizedImg } from '@xivoo/shared';
 import Faq from '@/components/faq';
+import LandingFx from '@/components/landing-fx';
 import Hero from '@/components/hero';
 import Newsletter from '@/components/newsletter';
 import { CouponCards } from '@/components/offers-band';
@@ -26,8 +27,9 @@ function SectionHead({
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <p className={`font-display text-[12px] font-bold uppercase tracking-[0.22em] ${dark ? 'text-brand' : 'text-brand'}`}>
-          {index} ──
+        <p className="flex items-center gap-2.5 font-display text-[12px] font-bold uppercase tracking-[0.22em] text-brand">
+          {index}
+          <span data-fx-line className="inline-block h-[2px] w-12 origin-left rounded bg-brand/70" aria-hidden />
         </p>
         <h2 className={`mt-2 font-display text-[clamp(24px,3vw,32px)] font-bold tracking-[-0.01em] ${dark ? 'text-white' : 'text-ink'}`}>
           {title}
@@ -61,6 +63,7 @@ export default async function Home() {
 
   return (
     <>
+      <LandingFx />
       <Hero />
 
       {/* 01 · Category rail */}
@@ -127,7 +130,7 @@ export default async function Home() {
           <div className="mt-8 grid gap-5 lg:grid-cols-2">
             {campaigns.map((c, i) => (
               <Reveal key={c.key} delay={i * 0.08}>
-                <div className="group grid min-h-[240px] overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.04] sm:grid-cols-[1.1fr_1fr]">
+                <div data-parallax-wrap className="group grid min-h-[240px] overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.04] sm:grid-cols-[1.1fr_1fr]">
                   <div className="flex flex-col items-start justify-center gap-3 p-7">
                     <span className="rounded-md border border-brand/40 bg-brand/15 px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.12em] text-brand">
                       {c.when}
@@ -143,11 +146,12 @@ export default async function Home() {
                   </div>
                   <div className="relative min-h-[200px]">
                     <PImg
+                      data-parallax="0.1"
                       src={c.img}
                       alt={c.title}
                       fill
                       sizes="(max-width: 640px) 100vw, 320px"
-                      className="object-cover opacity-90 transition-transform duration-500 group-hover:scale-[1.04]"
+                      className="scale-[1.22] object-cover opacity-90"
                     />
                   </div>
                 </div>
@@ -262,7 +266,10 @@ export default async function Home() {
         <div className="grid items-start gap-5 lg:grid-cols-[1fr_1.35fr]">
           <Reveal>
             <div className="rounded-[24px] border border-dashed border-input bg-white p-8">
-              <p className="font-display text-[12px] font-bold uppercase tracking-[0.22em] text-brand">07 ──</p>
+              <p className="flex items-center gap-2.5 font-display text-[12px] font-bold uppercase tracking-[0.22em] text-brand">
+                07
+                <span data-fx-line className="inline-block h-[2px] w-12 origin-left rounded bg-brand/70" aria-hidden />
+              </p>
               <h2 className="mt-2 font-display text-[clamp(24px,3vw,32px)] font-bold tracking-[-0.01em]">Customer reviews</h2>
               <p className="mt-3 text-[15px] leading-relaxed text-muted">
                 Reviews from verified buyers will appear here after our first deliveries. We only

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
+import PImg from './pimg';
 import Link from 'next/link';
 import { IMG } from '@xivoo/shared';
 import { ArrowRightIcon } from './icons';
@@ -22,9 +22,9 @@ const STATS: [string, string][] = [
 
 export default function Hero() {
   return (
-    <section className="relative -mt-[96px] overflow-hidden bg-dark pt-[104px] text-white lg:-mt-[72px] lg:pt-[88px]">
+    <section data-parallax-wrap className="relative -mt-[96px] overflow-hidden bg-dark pt-[104px] text-white lg:-mt-[72px] lg:pt-[88px]">
       {/* electronic backdrop */}
-      <div aria-hidden className="circuit-grid absolute inset-0" />
+      <div aria-hidden data-parallax="0.05" className="circuit-grid absolute -top-16 bottom-0 left-0 right-0" />
       <div
         aria-hidden
         className="pointer-events-none absolute -right-40 -top-40 h-[560px] w-[560px] rounded-full opacity-30"
@@ -80,7 +80,7 @@ export default function Hero() {
               Explore Categories
             </Link>
           </motion.div>
-          <motion.dl variants={item} className="mt-10 grid max-w-[460px] grid-cols-3 gap-6 border-t border-white/10 pt-6">
+          <motion.dl variants={item} className="mt-10 grid max-w-[460px] grid-cols-3 gap-6 border-t border-white/10 pt-6 max-[430px]:grid-cols-1 max-[430px]:gap-4">
             {STATS.map(([big, small]) => (
               <div key={small}>
                 <dt className="font-display text-[22px] font-bold text-brand">{big}</dt>
@@ -97,17 +97,19 @@ export default function Hero() {
             initial={{ opacity: 0, y: 30, rotate: -6 }}
             animate={{ opacity: 1, y: 0, rotate: -4 }}
             transition={{ delay: 0.25, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={{ scale: 1.04, rotate: -1.5 }}
             className="absolute left-0 top-6 w-[58%] overflow-hidden rounded-[24px] border border-white/10 shadow-[0_32px_70px_-24px_rgba(0,0,0,.8)]"
           >
-            <Image src={IMG('1505740420928-5e560c06d30e', 560, 700)} alt="ANC headphones" width={560} height={700} className="h-auto w-full object-cover" priority />
+            <PImg data-parallax="0.09" src={IMG('1505740420928-5e560c06d30e', 560, 700)} alt="ANC headphones" width={560} height={700} className="h-auto w-full scale-[1.14] object-cover" priority />
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 40, rotate: 7 }}
             animate={{ opacity: 1, y: 0, rotate: 5 }}
             transition={{ delay: 0.4, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={{ scale: 1.05, rotate: 2.5 }}
             className="absolute right-0 top-20 w-[46%] overflow-hidden rounded-[24px] border border-white/10 shadow-[0_32px_70px_-24px_rgba(0,0,0,.8)]"
           >
-            <Image src={IMG('1579586337278-3befd40fd17a', 460, 580)} alt="Smart watch" width={460} height={580} className="h-auto w-full object-cover" />
+            <PImg data-parallax="0.16" src={IMG('1579586337278-3befd40fd17a', 460, 580)} alt="Smart watch" width={460} height={580} className="h-auto w-full scale-[1.16] object-cover" />
           </motion.div>
           {/* floating spec chips */}
           <motion.span
@@ -128,7 +130,7 @@ export default function Hero() {
       </div>
 
       {/* Orange ticker */}
-      <div className="relative overflow-hidden bg-brand py-3 text-white">
+      <div data-ticker className="relative overflow-hidden bg-brand py-3 text-white">
         <div className="animate-marquee flex w-max gap-10 whitespace-nowrap pl-10 font-display text-[12.5px] font-bold uppercase tracking-[0.08em]">
           {[0, 1].map((half) => (
             <span key={half} aria-hidden={half === 1} className="flex gap-10">

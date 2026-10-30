@@ -1,7 +1,7 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, MeshDistortMaterial } from '@react-three/drei';
+import { Float, MeshDistortMaterial, Sparkles } from '@react-three/drei';
 import { useEffect, useRef, useState } from 'react';
 import type { Group } from 'three';
 
@@ -70,6 +70,8 @@ export default function HeroScene() {
         <directionalLight position={[4, 6, 5]} intensity={1.4} />
         <directionalLight position={[-5, -3, 2]} intensity={0.4} color="#FF6A00" />
         <Shapes />
+        <Sparkles count={70} scale={[9, 5.5, 3.5]} size={2.4} speed={0.35} color="#FF6A00" opacity={0.75} />
+        <Sparkles count={40} scale={[8, 5, 3]} size={1.4} speed={0.25} color="#ffffff" opacity={0.5} />
       </Canvas>
     </div>
   );
