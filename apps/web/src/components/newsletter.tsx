@@ -56,11 +56,10 @@ export default function Newsletter() {
           ) : (
             <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <h2 className="font-display text-[32px] font-semibold tracking-[-0.02em]">
-                New arrivals, first.
+                Subscribe To Our Newsletter
               </h2>
               <p className="mt-2 max-w-[520px] text-[15px] leading-relaxed text-ink-2">
-                New gadget drops, combo savings and coupon codes — a short email, never more
-                than once a week.
+                Get all the latest information on new gadgets, sales and offers.
               </p>
               <form onSubmit={submit} className="mt-6 flex max-w-[560px] flex-wrap gap-3">
                 <input

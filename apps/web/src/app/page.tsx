@@ -1,51 +1,12 @@
-import PImg from '@/components/pimg';
 import Link from 'next/link';
-import { CURATED, fmt, productImg, sizedImg } from '@xivoo/shared';
-import Faq from '@/components/faq';
-import LandingFx from '@/components/landing-fx';
-import Hero from '@/components/hero';
+import { IMG, TONES, fmt, productImg, sizedImg } from '@xivoo/shared';
 import Newsletter from '@/components/newsletter';
-import { CouponCards } from '@/components/offers-band';
-import ProductCard from '@/components/product-card';
+import PImg from '@/components/pimg';
+import ProductTabs from '@/components/product-tabs';
 import { Reveal, RevealGroup, RevealItem } from '@/components/reveal';
-import { CashIcon, HeadsetIcon, ShieldIcon, SwapIcon, TruckIcon } from '@/components/icons';
+import Ticker from '@/components/ticker';
+import { ArrowRightIcon, CashIcon, HeadsetIcon, ShieldIcon, SwapIcon, TruckIcon } from '@/components/icons';
 import { getCampaigns, getCategories, getCoupons, getProducts } from '@/lib/api';
-
-function SectionHead({
-  index,
-  title,
-  href,
-  link,
-  dark,
-}: {
-  index: string;
-  title: string;
-  href?: string;
-  link?: string;
-  dark?: boolean;
-}) {
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <p className="flex items-center gap-2.5 font-display text-[12px] font-bold uppercase tracking-[0.22em] text-brand">
-          {index}
-          <span data-fx-line className="inline-block h-[2px] w-12 origin-left rounded bg-brand/70" aria-hidden />
-        </p>
-        <h2 className={`mt-2 font-display text-[clamp(24px,3vw,32px)] font-bold tracking-[-0.01em] ${dark ? 'text-white' : 'text-ink'}`}>
-          {title}
-        </h2>
-      </div>
-      {href && (
-        <Link
-          href={href}
-          className={`font-display text-[13px] font-bold uppercase tracking-[0.06em] hover:underline ${dark ? 'text-white/80' : 'text-brand'}`}
-        >
-          {link ?? 'View all'} →
-        </Link>
-      )}
-    </div>
-  );
-}
 
 export default async function Home() {
   const [products, categories, campaigns, coupons] = await Promise.all([
@@ -55,175 +16,199 @@ export default async function Home() {
     getCoupons(),
   ]);
 
-  const newArrivals = products.filter((p) => p.isNew).slice(0, 4);
-  const combos = products.filter((p) => p.cat === 'combos');
-  const picks = CURATED.map((id) => products.find((p) => p.id === id)).filter(
-    (p): p is NonNullable<typeof p> => !!p,
+  const byNew = [...products].sort((a, b) => Number(b.isNew ?? false) - Number(a.isNew ?? false) || b.order - a.order);
+  const discounted = products.filter((p) => p.was && p.was > p.price);
+  const byDiscount = [...discounted].sort(
+    (a, b) => (1 - b.price / (b.was ?? b.price)) - (1 - a.price / (a.was ?? a.price)),
   );
+  const inStock = products.filter((p) => p.totalStock > 0);
+  const bestValue = [...inStock].sort((a, b) => a.price - b.price);
+  const combos = products.filter((p) => p.cat === 'combos');
+  const coupon = coupons.find((c) => c.active);
 
   return (
     <>
-      <LandingFx />
-      <Hero />
+      <Ticker />
 
-      {/* 01 · Category rail */}
-      <section id="categories" className="mx-auto mt-20 max-w-[1240px] scroll-mt-28 px-6">
+      {/* Hero banner — single static banner (no carousel) */}
+      <section className="mx-auto mt-5 max-w-[1280px] px-4 sm:px-6">
         <Reveal>
-          <SectionHead index="01" title="Shop by category" href="/c/all" link="Shop all" />
-        </Reveal>
-        <div className="no-scrollbar -mx-6 mt-8 flex snap-x gap-5 overflow-x-auto px-6 pb-2">
-          {categories.map((c) => (
-            <Link
-              key={c.key}
-              href={`/c/${c.key}`}
-              className="group relative block w-[230px] shrink-0 snap-start overflow-hidden rounded-[24px] bg-dark"
-              style={{ aspectRatio: '3/4' }}
-            >
-              {c.img && (
-                <PImg
-                  src={c.img}
-                  alt={c.title}
-                  fill
-                  sizes="230px"
-                  className="object-cover opacity-90 transition-all duration-500 group-hover:scale-[1.06] group-hover:opacity-100"
-                />
-              )}
-              <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-              <span className="absolute inset-x-0 bottom-0 p-5">
-                <span className="block font-display text-[17px] font-bold leading-tight text-white">{c.title}</span>
-                <span className="mt-1.5 inline-block rounded-md border border-white/25 px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.08em] text-white/80">
-                  {c.count} items
-                </span>
+          <div className="relative grid min-h-[300px] overflow-hidden rounded-2xl bg-dark text-white md:grid-cols-[1.1fr_1fr] lg:min-h-[360px]">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-24 -top-24 h-[380px] w-[380px] rounded-full opacity-30"
+              style={{ background: 'radial-gradient(closest-side, #FF6A00, transparent 70%)' }}
+            />
+            <div className="relative flex flex-col items-start justify-center gap-4 p-7 sm:p-10">
+              <span className="rounded-md border border-brand/50 bg-brand/15 px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-[0.14em] text-brand">
+                Smart Finds. Better Living.
               </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 02 · Trending (white panel) */}
-      <section className="mx-auto mt-16 max-w-[1240px] px-6">
-        <div className="rounded-[28px] border border-line bg-white p-[clamp(22px,3.4vw,44px)]">
-          <Reveal>
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <SectionHead index="02" title="Trending now" />
-              <span className="rounded-md border border-brand/30 bg-brand-25 px-3 py-1.5 text-[12px] font-semibold text-brand">
-                Curated picks · real bestseller rankings once we have sales history
-              </span>
+              <h1 className="font-display text-[clamp(28px,3.6vw,44px)] font-bold leading-[1.08] [text-wrap:balance]">
+                Upgrade Your <span className="text-brand">Everyday.</span>
+              </h1>
+              <p className="max-w-[420px] text-[14.5px] leading-relaxed text-white/70">
+                Smart gadgets, audio essentials and everyday accessories — delivered across
+                Bangladesh with Cash on Delivery.
+              </p>
+              <div className="mt-1 flex flex-wrap gap-3">
+                <Link
+                  href="/c/all"
+                  className="group flex items-center gap-2 rounded-xl bg-brand px-5 py-3 font-display text-[13.5px] font-bold uppercase tracking-[0.04em] transition-transform hover:scale-[1.03]"
+                >
+                  Shop Now
+                  <ArrowRightIcon size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+                {coupon && (
+                  <span className="flex items-center gap-2 rounded-xl border border-dashed border-white/30 px-4 py-3 text-[13px] font-semibold text-white/80">
+                    Use <span className="font-display font-bold text-brand">{coupon.code}</span> — {coupon.label.split(',')[0]}
+                  </span>
+                )}
+              </div>
             </div>
-          </Reveal>
-          <RevealGroup className="mt-8 grid gap-x-5 gap-y-7 [grid-template-columns:repeat(auto-fill,minmax(210px,1fr))]">
-            {picks.map((p) => (
-              <RevealItem key={p.id}>
-                <ProductCard product={p} />
-              </RevealItem>
-            ))}
-          </RevealGroup>
-        </div>
+            <div className="relative min-h-[220px]">
+              <PImg
+                src={IMG('1505740420928-5e560c06d30e', 760, 620)}
+                alt="Featured headphones"
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 560px"
+                className="object-cover"
+              />
+              <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-dark via-dark/20 to-transparent" />
+            </div>
+          </div>
+        </Reveal>
       </section>
 
-      {/* 03 · Campaigns + coupons (dark band) */}
-      <section className="mt-20 bg-dark py-20 text-white">
-        <div className="mx-auto max-w-[1240px] px-6">
-          <Reveal>
-            <SectionHead index="03" title="Campaigns & deals" dark />
-          </Reveal>
-          <div className="mt-8 grid gap-5 lg:grid-cols-2">
-            {campaigns.map((c, i) => (
-              <Reveal key={c.key} delay={i * 0.08}>
-                <div data-parallax-wrap className="group grid min-h-[240px] overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.04] sm:grid-cols-[1.1fr_1fr]">
-                  <div className="flex flex-col items-start justify-center gap-3 p-7">
-                    <span className="rounded-md border border-brand/40 bg-brand/15 px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.12em] text-brand">
-                      {c.when}
-                    </span>
-                    <h3 className="font-display text-[24px] font-bold leading-[1.1]">{c.title}</h3>
-                    <p className="text-[14.5px] leading-relaxed text-white/65">{c.line}</p>
-                    <Link
-                      href={`/c/seasonal?sub=${c.key}`}
-                      className="mt-1 rounded-xl bg-brand px-5 py-2.5 font-display text-[13px] font-bold uppercase tracking-[0.04em] text-white transition-transform hover:scale-[1.04]"
-                    >
-                      Shop the deals
-                    </Link>
-                  </div>
-                  <div className="relative min-h-[200px]">
+      {/* Categories */}
+      <section className="mx-auto mt-12 max-w-[1280px] px-4 sm:px-6">
+        <div className="flex items-center justify-between border-b-2 border-line pb-3">
+          <h3 className="font-display text-[20px] font-bold tracking-[-0.01em]">Categories</h3>
+          <Link href="/c/all" className="text-[13px] font-bold text-brand hover:underline">See All →</Link>
+        </div>
+        <RevealGroup className="mt-5 grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(140px,1fr))]" stagger={0.05}>
+          {categories.map((c) => (
+            <RevealItem key={c.key}>
+              <Link href={`/c/${c.key}`} className="group block rounded-2xl border border-line bg-white p-3 text-center transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-md">
+                <span
+                  className="relative mx-auto block aspect-square w-full overflow-hidden rounded-xl"
+                  style={{ background: c.tone ? TONES[c.tone] : '#EFEFEF' }}
+                >
+                  {c.img && (
                     <PImg
-                      data-parallax="0.1"
                       src={c.img}
                       alt={c.title}
                       fill
-                      sizes="(max-width: 640px) 100vw, 320px"
-                      className="scale-[1.22] object-cover opacity-90"
+                      sizes="160px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.07]"
                     />
-                  </div>
-                </div>
+                  )}
+                </span>
+                <span className="mt-2.5 block text-[13.5px] font-bold leading-tight">{c.title}</span>
+                <span className="text-[11.5px] text-muted">{c.count} items</span>
+              </Link>
+            </RevealItem>
+          ))}
+        </RevealGroup>
+      </section>
+
+      {/* Flash Deals — countdown + tabs */}
+      <ProductTabs
+        title="⚡ Flash Deals"
+        accent
+        countdown
+        seeAllHref="/c/offers"
+        tabs={[
+          { label: 'Biggest Discount', products: byDiscount },
+          { label: 'Newest', products: discounted.filter((p) => p.isNew).concat(discounted.filter((p) => !p.isNew)) },
+        ]}
+      />
+
+      {/* Promo banners (campaigns) */}
+      {campaigns.length > 0 && (
+        <section className="mx-auto mt-10 max-w-[1280px] px-4 sm:px-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            {campaigns.slice(0, 2).map((c) => (
+              <Reveal key={c.key}>
+                <Link href={`/c/seasonal?sub=${c.key}`} className="group relative block h-[150px] overflow-hidden rounded-2xl bg-dark sm:h-[180px]">
+                  <PImg
+                    src={c.img}
+                    alt={c.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 620px"
+                    className="object-cover opacity-80 transition-transform duration-500 group-hover:scale-[1.04]"
+                  />
+                  <span className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
+                  <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1.5 p-6">
+                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.14em] text-brand">{c.when}</span>
+                    <span className="font-display text-[22px] font-bold text-white">{c.title}</span>
+                    <span className="max-w-[300px] text-[12.5px] text-white/75">{c.line}</span>
+                    <span className="mt-1 text-[12.5px] font-bold text-brand group-hover:underline">Shop the deals →</span>
+                  </span>
+                </Link>
               </Reveal>
             ))}
           </div>
-          <div className="mt-10">
-            <p className="mb-4 font-display text-[12px] font-bold uppercase tracking-[0.22em] text-white/50">
-              Coupon codes
-            </p>
-            <CouponCards coupons={coupons} />
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* 04 · New arrivals (white panel) */}
-      <section className="mx-auto mt-20 max-w-[1240px] px-6">
-        <div className="rounded-[28px] border border-line bg-white p-[clamp(22px,3.4vw,44px)]">
-          <Reveal>
-            <SectionHead index="04" title="New arrivals" href="/c/all" />
-          </Reveal>
-          <RevealGroup className="mt-8 grid gap-x-5 gap-y-7 [grid-template-columns:repeat(auto-fill,minmax(210px,1fr))]">
-            {newArrivals.map((p) => (
-              <RevealItem key={p.id}>
-                <ProductCard product={p} />
-              </RevealItem>
-            ))}
-          </RevealGroup>
-        </div>
-      </section>
+      {/* Trending Now */}
+      <ProductTabs
+        title="Trending Now"
+        seeAllHref="/c/all"
+        tabs={[
+          { label: 'Newest', products: byNew },
+          { label: 'Best Value', products: bestValue },
+        ]}
+      />
 
-      {/* 05 · Combo deals */}
-      <section className="mx-auto mt-20 max-w-[1240px] px-6">
-        <Reveal>
-          <SectionHead index="05" title="Combo deals" href="/c/combos" />
-        </Reveal>
-        <RevealGroup className="mt-8 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))]">
+      {/* New Arrivals */}
+      <ProductTabs
+        title="New Arrivals"
+        seeAllHref="/c/all"
+        tabs={[{ label: 'Just In', products: byNew.filter((p) => p.isNew) }]}
+      />
+
+      {/* Combo Deals */}
+      <section className="mx-auto mt-12 max-w-[1280px] px-4 sm:px-6">
+        <div className="flex items-center justify-between border-b-2 border-line pb-3">
+          <h3 className="font-display text-[20px] font-bold tracking-[-0.01em]">Combo Deals</h3>
+          <Link href="/c/combos" className="text-[13px] font-bold text-brand hover:underline">See All →</Link>
+        </div>
+        <RevealGroup className="mt-5 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))]">
           {combos.map((b) => {
             const parts = (b.includes ?? []).map((id) => products.find((p) => p.id === id)?.name).filter(Boolean);
             const save = (b.was ?? b.price) - b.price;
             return (
               <RevealItem key={b.id}>
-                <div className="flex h-full flex-col rounded-[24px] border border-line bg-white p-[22px] transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_24px_50px_-28px_rgba(255,106,0,.45)]">
+                <div className="flex h-full flex-col rounded-2xl border border-line bg-white p-5 transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-md">
                   <div className="flex gap-2.5">
                     {(b.includes ?? []).map((id) => {
                       const inc = products.find((p) => p.id === id);
                       return (
-                        <span key={id} className="relative block h-[72px] w-[58px] overflow-hidden rounded-lg bg-surface-2">
-                          <PImg src={inc ? sizedImg(inc, 120, 150) : productImg(id, 120, 150)} alt="" fill sizes="58px" className="object-cover" />
+                        <span key={id} className="relative block h-[68px] w-[56px] overflow-hidden rounded-lg bg-surface-2">
+                          <PImg src={inc ? sizedImg(inc, 120, 150) : productImg(id, 120, 150)} alt="" fill sizes="56px" className="object-cover" />
                         </span>
                       );
                     })}
-                    <span className="grid h-[72px] flex-1 place-items-end justify-end">
-                      <span className="rounded-md bg-brand-50 px-2 py-1 font-display text-[11px] font-bold uppercase tracking-[0.06em] text-brand">
-                        Save {fmt(save)}
-                      </span>
+                    <span className="ml-auto self-start rounded-md bg-sale px-2 py-1 font-display text-[11px] font-bold text-white">
+                      Save {fmt(save)}
                     </span>
                   </div>
-                  <h3 className="mt-4 font-display text-[19px] font-bold leading-[1.15]">{b.name}</h3>
-                  <p className="mt-1.5 text-[13px] text-muted">{parts.join(' + ')}</p>
+                  <h4 className="mt-3.5 font-display text-[17px] font-bold leading-[1.2]">{b.name}</h4>
+                  <p className="mt-1 text-[12.5px] text-muted">{parts.join(' + ')}</p>
                   <div className="mt-auto flex items-end justify-between gap-3 pt-4">
                     <div>
-                      <p className="text-[17px] font-bold">{fmt(b.price)}</p>
-                      <p className="text-[12.5px] text-muted">
+                      <p className="text-[16px] font-bold text-brand">{fmt(b.price)}</p>
+                      <p className="text-[12px] text-muted">
                         Separately <s>{fmt(b.was ?? b.price)}</s>
                       </p>
                     </div>
                     <Link
                       href={`/p/${b.id}`}
-                      className="rounded-xl border border-ink px-4 py-2.5 font-display text-[12px] font-bold uppercase tracking-[0.04em] text-ink transition-colors hover:border-brand hover:bg-brand hover:text-white"
+                      className="rounded-xl bg-dark px-4 py-2.5 text-[12.5px] font-bold text-white transition-colors hover:bg-brand"
                     >
-                      View combo
+                      View Combo
                     </Link>
                   </div>
                 </div>
@@ -233,61 +218,28 @@ export default async function Home() {
         </RevealGroup>
       </section>
 
-      {/* 06 · Why choose Xivoo (bento) */}
-      <section className="mx-auto mt-20 max-w-[1240px] px-6">
-        <Reveal>
-          <SectionHead index="06" title="Why choose Xivoo" />
-        </Reveal>
-        <RevealGroup className="mt-8 grid gap-4 md:grid-cols-6">
+      {/* Benefit strip */}
+      <section className="mx-auto mt-14 max-w-[1280px] px-4 sm:px-6">
+        <div className="grid overflow-hidden rounded-2xl border border-line bg-white sm:grid-cols-2 lg:grid-cols-5">
           {(
             [
-              [TruckIcon, 'Nationwide delivery', 'Dhaka in 1–2 days, every district in 3–5 via courier partners — with live confirmation calls, never fake tracking.', 'md:col-span-3'],
-              [CashIcon, 'Cash on Delivery', 'Check your parcel first, then pay the rider. Mobile banking and cards are coming soon.', 'md:col-span-3'],
-              [SwapIcon, '7-day returns', 'Unused items with intact packaging — exchanged or refunded.', 'md:col-span-2'],
-              [ShieldIcon, 'Genuine products', 'Official warranty where marked. No clones sold as originals.', 'md:col-span-2'],
-              [HeadsetIcon, 'Real support', 'WhatsApp or Messenger, 10am–10pm, every day.', 'md:col-span-2'],
+              [ShieldIcon, '100% Genuine Products', 'Official warranty where marked'],
+              [TruckIcon, 'Fast Nationwide Delivery', 'Dhaka 1–2 days · districts 3–5'],
+              [CashIcon, 'Cash on Delivery', 'Check the parcel, then pay'],
+              [SwapIcon, '7-Day Easy Returns', 'Unused, with intact packaging'],
+              [HeadsetIcon, 'Real Support', 'WhatsApp & Messenger, 10am–10pm'],
             ] as const
-          ).map(([Icon, title, line, span], i) => (
-            <RevealItem key={title} className={span}>
-              <div className={`h-full rounded-[24px] border p-6 ${i === 0 ? 'border-brand/30 bg-brand-25' : 'border-line bg-white'}`}>
-                <span className={`grid h-11 w-11 place-items-center rounded-xl ${i === 0 ? 'bg-brand text-white' : 'bg-brand-50 text-brand'}`}>
-                  <Icon />
-                </span>
-                <h3 className="mt-4 font-display text-[16px] font-bold">{title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted">{line}</p>
-              </div>
-            </RevealItem>
+          ).map(([Icon, title, line], i) => (
+            <div key={title} className={`flex items-center gap-3.5 p-5 ${i > 0 ? 'border-t border-line lg:border-l lg:border-t-0' : ''}`}>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">
+                <Icon />
+              </span>
+              <span>
+                <span className="block text-[13.5px] font-bold leading-tight">{title}</span>
+                <span className="block text-[12px] text-muted">{line}</span>
+              </span>
+            </div>
           ))}
-        </RevealGroup>
-      </section>
-
-      {/* 07 · Reviews + FAQ split */}
-      <section className="mx-auto mt-20 max-w-[1240px] px-6">
-        <div className="grid items-start gap-5 lg:grid-cols-[1fr_1.35fr]">
-          <Reveal>
-            <div className="rounded-[24px] border border-dashed border-input bg-white p-8">
-              <p className="flex items-center gap-2.5 font-display text-[12px] font-bold uppercase tracking-[0.22em] text-brand">
-                07
-                <span data-fx-line className="inline-block h-[2px] w-12 origin-left rounded bg-brand/70" aria-hidden />
-              </p>
-              <h2 className="mt-2 font-display text-[clamp(24px,3vw,32px)] font-bold tracking-[-0.01em]">Customer reviews</h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-muted">
-                Reviews from verified buyers will appear here after our first deliveries. We only
-                publish genuine reviews — never paid or invented ones.
-              </p>
-              <p className="mt-4 rounded-xl bg-surface-2 px-4 py-3 text-[13px] font-semibold text-ink-2">
-                Bought from Xivoo? Message us your experience on WhatsApp and we&apos;ll feature it — honestly.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <div>
-              <SectionHead index="08" title="Frequently asked questions" href="/faq" link="All questions" />
-              <div className="mt-6">
-                <Faq limit={4} />
-              </div>
-            </div>
-          </Reveal>
         </div>
       </section>
 
