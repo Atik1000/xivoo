@@ -33,7 +33,7 @@ export function CouponCards({ coupons }: { coupons: Coupon[] }) {
             <motion.button
               whileTap={{ scale: 0.94 }}
               onClick={() => useCode(c.code)}
-              className="rounded-full bg-white px-4 py-2 font-display text-[12px] font-bold uppercase tracking-[0.06em] text-ink transition-colors hover:bg-brand hover:text-white"
+              className="rounded-full bg-surface px-4 py-2 font-display text-[12px] font-bold uppercase tracking-[0.06em] text-ink transition-colors hover:bg-brand hover:text-white"
             >
               Use code
             </motion.button>

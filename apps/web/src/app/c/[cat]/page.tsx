@@ -47,7 +47,7 @@ export default async function Listing({ params, searchParams }: Props) {
       key={label}
       href={href}
       className={`rounded-full border px-4 py-2 text-[13px] font-semibold transition-colors ${
-        active ? 'border-brand bg-brand text-white' : 'border-input bg-white text-ink hover:border-brand'
+        active ? 'border-brand bg-brand text-white' : 'border-input bg-surface text-ink hover:border-brand'
       }`}
     >
       {label}
@@ -97,7 +97,7 @@ export default async function Listing({ params, searchParams }: Props) {
           ))}
         </RevealGroup>
       ) : (
-        <div className="mt-10 rounded-[20px] border border-line bg-white p-10 text-center">
+        <div className="mt-10 rounded-[20px] border border-line bg-surface p-10 text-center">
           <h2 className="font-display text-2xl font-semibold">Nothing here yet</h2>
           <p className="mt-2 text-[15px] text-muted">
             {q ? `No results for “${q}”. Try a different word or browse a category.` : 'Try clearing the filters or browse a category.'}

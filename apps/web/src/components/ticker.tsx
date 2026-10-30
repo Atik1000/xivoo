@@ -11,7 +11,7 @@ const ITEMS: [string, string, string][] = [
 /** Dazzle-style looping announcement strip under the header. */
 export default function Ticker() {
   return (
-    <div className="overflow-hidden border-b border-line bg-[#0B0C0D] py-2 text-white">
+    <div className="overflow-hidden bg-dark py-2 text-white">
       <div className="animate-marquee flex w-max gap-12 whitespace-nowrap pl-10 text-[12.5px] font-semibold">
         {[0, 1].map((half) => (
           <span key={half} aria-hidden={half === 1} className="flex gap-12">

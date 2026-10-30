@@ -17,7 +17,7 @@ export default function SortSelect() {
           next.set('sort', e.target.value);
           router.push(`${pathname}?${next}`);
         }}
-        className="rounded-xl border border-input bg-white px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-brand"
+        className="rounded-xl border border-input bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-brand"
       >
         <option value="new">Newest</option>
         <option value="asc">Price low → high</option>

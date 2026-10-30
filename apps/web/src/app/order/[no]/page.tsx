@@ -113,7 +113,7 @@ export default function OrderPage({ params }: { params: Promise<{ no: string }> 
       )}
 
       {/* Items */}
-      <div className="mt-9 rounded-[20px] border border-line bg-white p-[22px]">
+      <div className="mt-9 rounded-[20px] border border-line bg-surface p-[22px]">
         <h2 className="text-[15px] font-bold">Items</h2>
         <ul className="mt-4 space-y-3.5">
           {order.items.map((it) => (
@@ -142,7 +142,7 @@ export default function OrderPage({ params }: { params: Promise<{ no: string }> 
 
       {/* Address + payment */}
       <div className="mt-5 grid gap-5 md:grid-cols-2">
-        <div className="rounded-[20px] border border-line bg-white p-[22px]">
+        <div className="rounded-[20px] border border-line bg-surface p-[22px]">
           <h2 className="text-[15px] font-bold">Delivering to</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-2">
             {order.customer.name}
@@ -152,7 +152,7 @@ export default function OrderPage({ params }: { params: Promise<{ no: string }> 
             {order.delivery.zoneLabel} · {order.customer.phone}
           </p>
         </div>
-        <div className="rounded-[20px] border border-line bg-white p-[22px]">
+        <div className="rounded-[20px] border border-line bg-surface p-[22px]">
           <h2 className="text-[15px] font-bold">Payment</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-2">
             {order.payment}. Please keep {fmt(order.total)} ready for the rider.

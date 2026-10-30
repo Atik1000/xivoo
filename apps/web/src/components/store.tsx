@@ -132,7 +132,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-            className="fixed bottom-6 left-1/2 z-[60] max-w-[calc(100vw-32px)] -translate-x-1/2 rounded-[14px] bg-ink px-5 py-3.5 text-sm font-semibold text-white shadow-[0_16px_32px_-12px_rgba(0,0,0,.4)]"
+            className="fixed bottom-6 left-1/2 z-[60] max-w-[calc(100vw-32px)] -translate-x-1/2 rounded-[10px] bg-dark px-5 py-3.5 text-sm font-semibold text-white shadow-[0_16px_32px_-12px_rgba(0,0,0,.4)]"
           >
             {toast}
           </motion.div>

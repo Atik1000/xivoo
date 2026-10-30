@@ -82,12 +82,12 @@ export default function CartPage() {
       <div className="mx-auto max-w-[1180px] px-6 pb-18 pt-8">
         <h1 className="font-display text-[40px] font-semibold leading-[1.08] tracking-[-0.02em]">Your cart</h1>
         <Reveal className="mt-8">
-          <div className="rounded-[20px] border border-line bg-white p-12 text-center">
+          <div className="rounded-[20px] border border-line bg-surface p-12 text-center">
             <p className="font-display text-2xl font-semibold">Your cart is empty.</p>
             <p className="mt-2 text-[15px] text-muted">Fill it with something that makes every day smarter.</p>
             <div className="mt-6 flex flex-wrap justify-center gap-2.5">
               {[['Shop all', '/c/all'], ['Offers', '/c/offers'], ['Combo deals', '/c/combos']].map(([l, h]) => (
-                <Link key={h} href={h} className="rounded-full border border-input bg-white px-4 py-2 text-[13px] font-semibold hover:border-brand">
+                <Link key={h} href={h} className="rounded-full border border-input bg-surface px-4 py-2 text-[13px] font-semibold hover:border-brand">
                   {l}
                 </Link>
               ))}
@@ -109,7 +109,7 @@ export default function CartPage() {
 
       <div className="mt-8 flex flex-wrap items-start gap-6">
         {/* Lines */}
-        <div className="min-w-0 flex-[999_1_560px] rounded-[20px] border border-line bg-white">
+        <div className="min-w-0 flex-[999_1_560px] rounded-[20px] border border-line bg-surface">
           {!lines
             ? <div className="p-8 text-sm text-muted">Loading your cart…</div>
             : (
@@ -166,7 +166,7 @@ export default function CartPage() {
         </div>
 
         {/* Summary */}
-        <aside className="sticky top-[96px] w-full flex-[1_1_300px] rounded-[20px] border border-line bg-white p-[22px] lg:max-w-[360px]">
+        <aside className="sticky top-[96px] w-full flex-[1_1_300px] rounded-[20px] border border-line bg-surface p-[22px] lg:max-w-[360px]">
           <h2 className="text-[17px] font-bold">Summary</h2>
 
           {coupon ? (

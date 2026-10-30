@@ -32,16 +32,11 @@ export default function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-40 flex w-[232px] flex-col bg-dark text-footer-text max-md:hidden">
       <div className="flex items-center gap-2.5 px-5 pb-6 pt-6">
-        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden>
-          <rect width="40" height="40" rx="10" fill="#FF6A00" />
-          <path d="M11 11l7 7" stroke="#111315" strokeWidth="5.5" strokeLinecap="round" />
-          <path d="M23 23l6.5 6.5" stroke="#111315" strokeWidth="5.5" strokeLinecap="round" />
-          <path d="M9.5 30.5C14 27 24 15 30.5 9.5" stroke="#FFFFFF" strokeWidth="5.5" strokeLinecap="round" fill="none" />
-        </svg>
-        <div>
-          <p className="font-display text-[17px] font-bold tracking-[-0.02em] text-white">Xivoo</p>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-footer-legal">Admin</p>
-        </div>
+        <span className="inline-block rounded-[10px] bg-white px-2.5 py-1.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Xivoo" className="h-5 w-auto" />
+        </span>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-footer-legal">Admin</p>
       </div>
 
       <nav className="flex-1 space-y-1 px-3">

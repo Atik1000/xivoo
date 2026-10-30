@@ -1,23 +1,16 @@
 import type { Metadata } from 'next';
-import { Chakra_Petch, Manrope } from 'next/font/google';
+import { Urbanist } from 'next/font/google';
 import Analytics from '@/components/analytics';
 import ChatButtons from '@/components/chat-buttons';
 import Footer from '@/components/footer';
 import Header, { UtilityBar } from '@/components/header';
-import { FAVICON } from '@/components/icons';
 import { StoreProvider } from '@/components/store';
 import { getCampaigns, getCategories, getProducts, getSubcategories } from '@/lib/api';
 import './globals.css';
 
-const chakra = Chakra_Petch({
+const urbanist = Urbanist({
   subsets: ['latin'],
-  variable: '--font-chakra',
-  weight: ['500', '600', '700'],
-});
-
-const manrope = Manrope({
-  subsets: ['latin'],
-  variable: '--font-manrope',
+  variable: '--font-urbanist',
   weight: ['400', '500', '600', '700', '800'],
 });
 
@@ -26,7 +19,7 @@ export const metadata: Metadata = {
   description:
     'Smart gadgets, audio essentials and everyday accessories for Bangladesh. Cash on Delivery nationwide, 7-day returns, genuine products.',
   keywords: ['Xivoo', 'gadgets Bangladesh', 'earbuds', 'smartwatch', 'mobile accessories', 'power bank'],
-  icons: { icon: FAVICON },
+  icons: { icon: '/logo-mark.png' },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -38,8 +31,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   ]);
 
   return (
-    <html lang="en" className={`${chakra.variable} ${manrope.variable}`}>
+    <html lang="en" className={`${urbanist.variable} dark`}>
       <body>
+        <script
+          // Applies the saved theme before first paint (defaults to dark, dazzle-style)
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('xivoo_theme');document.documentElement.classList.toggle('dark',t?t==='dark':true)}catch(e){}`,
+          }}
+        />
         <StoreProvider>
           <UtilityBar />
           <Header categories={categories} subcategories={subcategories} campaigns={campaigns} products={products} />

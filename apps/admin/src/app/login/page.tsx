@@ -80,21 +80,16 @@ export default function LoginPage() {
         className="relative w-full max-w-[400px]"
       >
         <div className="mb-6 flex items-center justify-center gap-3">
-          <motion.svg
-            width="44" height="44" viewBox="0 0 40 40" aria-hidden
-            initial={{ rotate: -8, scale: 0.8 }}
+          <motion.span
+            initial={{ rotate: -6, scale: 0.85 }}
             animate={{ rotate: 0, scale: 1 }}
             transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 0.15 }}
+            className="inline-block rounded-[12px] bg-white px-3 py-2"
           >
-            <rect width="40" height="40" rx="10" fill="#FF6A00" />
-            <path d="M11 11l7 7" stroke="#111315" strokeWidth="5.5" strokeLinecap="round" />
-            <path d="M23 23l6.5 6.5" stroke="#111315" strokeWidth="5.5" strokeLinecap="round" />
-            <path d="M9.5 30.5C14 27 24 15 30.5 9.5" stroke="#FFFFFF" strokeWidth="5.5" strokeLinecap="round" fill="none" />
-          </motion.svg>
-          <div>
-            <p className="font-display text-[22px] font-bold tracking-[-0.01em] text-white">Xivoo</p>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-footer-legal">Admin panel</p>
-          </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Xivoo" className="h-7 w-auto" />
+          </motion.span>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-footer-legal">Admin panel</p>
         </div>
 
         <motion.form

@@ -1,31 +1,36 @@
 @import "tailwindcss";
 
-@theme {
-  /* Xivoo design tokens (see handoff README) */
-  --color-brand: #FF6A00;
-  --color-dark: #111315;
-  --color-brand-50: #FFEDE0;
-  --color-brand-25: #FFF6EF;
-  --color-ink: #16181A;
-  --color-ink-2: #3A3F45;
-  --color-muted: #6B7076;
-  --color-muted-2: #9AA0A6;
-  --color-disabled: #B5BABF;
-  --color-cream: #F5F5F5;
-  --color-surface-2: #EFEFEF;
-  --color-line: #E4E4E4;
-  --color-line-2: #ECECEC;
-  --color-input: #D8D8D8;
-  --color-amber: #FFB133;
-  --color-sale: #E02D2D;
-  --color-sale-tint: #FDE9E9;
-  --color-amber-tint: #FFF4D6;
-  --color-amber-ink: #8A6400;
-  --color-footer-text: #E8EAED;
-  --color-footer-legal: #9AA0A6;
+@custom-variant dark (&:where(.dark, .dark *));
 
-  --font-display: var(--font-chakra), ui-sans-serif, sans-serif;
-  --font-body: var(--font-manrope), ui-sans-serif, sans-serif;
+@theme {
+  /* Xivoo tokens — light mode values; html.dark overrides below */
+  --color-brand: #CB843B;
+  --color-brand-deep: #6D3F0E;
+  --color-brand-50: #F3E4CF;
+  --color-brand-25: #FAF3E8;
+  --color-dark: #000000;
+  --color-ink: #2E2B28;
+  --color-ink-2: #55504A;
+  --color-muted: #7A746C;
+  --color-muted-2: #A39C93;
+  --color-disabled: #B9B2A8;
+  --color-cream: #FAF8F5;
+  --color-surface: #ffffff;
+  --color-surface-2: #F1ECE4;
+  --color-line: #E7E1D7;
+  --color-line-2: #EFEAE2;
+  --color-input: #DCD5CA;
+  --color-amber: #D4A017;
+  --color-stock: #0B8A00;
+  --color-sale: #D64545;
+  --color-sale-tint: #FBE9E9;
+  --color-amber-tint: #F6ECD2;
+  --color-amber-ink: #8A6400;
+  --color-footer-text: #EDEDED;
+  --color-footer-legal: #A39C93;
+
+  --font-display: var(--font-urbanist), ui-sans-serif, sans-serif;
+  --font-body: var(--font-urbanist), ui-sans-serif, sans-serif;
 
   --animate-marquee: marquee 28s linear infinite;
   --animate-sheen: sheen 9s ease-in-out infinite;
@@ -40,11 +45,36 @@
   }
 }
 
+/* Dark theme (default) — dazzle-style warm dark with black surfaces */
+html.dark {
+  --color-brand: #CB843B;
+  --color-brand-deep: #E9CCAE;
+  --color-brand-50: #3A2F20;
+  --color-brand-25: #2A241B;
+  --color-ink: #EDEDED;
+  --color-ink-2: #CFC9C2;
+  --color-muted: #A39C93;
+  --color-muted-2: #7A746C;
+  --color-disabled: #5E584F;
+  --color-cream: #2E2B28;
+  --color-surface: #000000;
+  --color-surface-2: #1C1915;
+  --color-line: #3B3631;
+  --color-line-2: #332F2A;
+  --color-input: #4A463F;
+  --color-stock: #03A000;
+  --color-sale: #FF7575;
+  --color-sale-tint: #3A2323;
+  --color-amber-tint: #3A3012;
+  --color-amber-ink: #E9CCAE;
+}
+
 body {
   background: var(--color-cream);
   color: var(--color-ink);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Lives in @layer base so utility classes (e.g. `outline-none` on inputs whose
@@ -64,7 +94,7 @@ body {
 
 /* Subtle texture used behind product imagery while it loads */
 .tone-hatch {
-  background-image: repeating-linear-gradient(135deg, rgba(17, 19, 21, 0.05) 0 1px, transparent 1px 14px);
+  background-image: repeating-linear-gradient(135deg, rgba(23, 36, 29, 0.05) 0 1px, transparent 1px 14px);
 }
 
 .no-scrollbar {
@@ -83,5 +113,5 @@ body {
   mask-image: radial-gradient(120% 90% at 50% 0%, black 30%, transparent 85%);
 }
 .glow-brand {
-  box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 10px 40px -8px rgba(255, 106, 0, 0.55);
+  box-shadow: 0 0 0 1px rgba(203, 132, 59, 0.35), 0 10px 40px -8px rgba(203, 132, 59, 0.55);
 }

@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { LogoMark } from './icons';
 
 const SHOP = [
   ['Shop All Products', '/c/all'],
@@ -29,9 +28,9 @@ export default function Footer() {
     <footer className="mt-16 bg-dark text-footer-text">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-6 py-14 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
         <div>
-          <span className="flex items-center gap-2.5">
-            <LogoMark size={32} />
-            <span className="font-display text-xl font-bold tracking-[-0.02em] text-white">Xivoo</span>
+          <span className="inline-block rounded-[10px] bg-white px-3 py-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Xivoo" className="h-6 w-auto" />
           </span>
           <p className="mt-4 max-w-[260px] text-sm leading-relaxed text-footer-legal">
             Smart Finds. Better Living. Gadgets, audio and everyday accessories for Bangladesh,

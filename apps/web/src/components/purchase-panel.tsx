@@ -36,10 +36,10 @@ export default function PurchasePanel({ product: p }: { product: PDP }) {
 
   const stockPill =
     left === 0
-      ? { text: 'Out of stock in this option', bg: '#EFEFEF', fg: '#6B7076' }
+      ? { text: 'Out of stock in this option', bg: 'var(--color-surface-2)', fg: 'var(--color-muted)' }
       : left <= 3
-        ? { text: `Only ${left} left`, bg: '#FFF4D6', fg: '#8A6400' }
-        : { text: 'In stock', bg: '#FFEDE0', fg: '#FF6A00' };
+        ? { text: `Only ${left} left`, bg: 'var(--color-amber-tint)', fg: 'var(--color-amber-ink)' }
+        : { text: 'In stock', bg: 'var(--color-brand-50)', fg: 'var(--color-stock)' };
 
   const bumpQty = (d: number) => {
     const next = qty + d;
@@ -109,7 +109,7 @@ export default function PurchasePanel({ product: p }: { product: PDP }) {
         <p className="mt-5 max-w-[520px] text-[16px] leading-relaxed text-ink-2">{p.desc}</p>
 
         {p.bundleItems.length > 0 && (
-          <div className="mt-6 rounded-2xl border border-line bg-white p-5">
+          <div className="mt-6 rounded-2xl border border-line bg-surface p-5">
             <h3 className="text-sm font-bold">In this bundle</h3>
             <ul className="mt-3 space-y-3">
               {p.bundleItems.map((b) => (
@@ -168,9 +168,9 @@ export default function PurchasePanel({ product: p }: { product: PDP }) {
                     }}
                     className="min-h-[44px] min-w-[52px] rounded-[10px] border px-3.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed"
                     style={{
-                      background: out ? '#EFEFEF' : active ? '#16181A' : '#fff',
-                      color: out ? '#B5BABF' : active ? '#fff' : '#16181A',
-                      borderColor: active ? '#16181A' : '#D8D8D8',
+                      background: out ? 'var(--color-surface-2)' : active ? 'var(--color-dark)' : 'var(--color-surface)',
+                      color: out ? 'var(--color-disabled)' : active ? 'var(--color-surface)' : 'var(--color-dark)',
+                      borderColor: active ? 'var(--color-dark)' : 'var(--color-input)',
                       textDecoration: out ? 'line-through' : 'none',
                     }}
                   >

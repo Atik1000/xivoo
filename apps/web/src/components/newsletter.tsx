@@ -68,7 +68,7 @@ export default function Newsletter() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   aria-label="Email address"
-                  className="min-w-0 flex-1 rounded-xl border border-input bg-white px-4 py-3 text-[15px] outline-none focus:border-brand"
+                  className="min-w-0 flex-1 rounded-xl border border-input bg-surface px-4 py-3 text-[15px] outline-none focus:border-brand"
                 />
                 <motion.button
                   whileTap={{ scale: 0.96 }}

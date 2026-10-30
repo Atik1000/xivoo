@@ -18,7 +18,7 @@ export default function Faq({ limit }: { limit?: number }) {
   const items = limit ? FAQS.slice(0, limit) : FAQS;
 
   return (
-    <div className="overflow-hidden rounded-[20px] border border-line bg-white">
+    <div className="overflow-hidden rounded-[20px] border border-line bg-surface">
       {items.map(([q, a], i) => (
         <div key={q} className={i > 0 ? 'border-t border-line-2' : ''}>
           <button

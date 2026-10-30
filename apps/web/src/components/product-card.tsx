@@ -13,9 +13,9 @@ function badgeOf(p: Product): { label: string; bg: string; fg: string } | null {
   if (p.cat === 'combos') return { label: 'Combo', bg: '#16181A', fg: '#ffffff' };
   if (p.was && p.was > p.price) {
     const off = Math.round((1 - p.price / p.was) * 100);
-    return { label: `-${off}%`, bg: '#E02D2D', fg: '#ffffff' };
+    return { label: `-${off}%`, bg: '#FF7575', fg: '#16181A' };
   }
-  if (p.isNew) return { label: 'New', bg: '#FF6A00', fg: '#ffffff' };
+  if (p.isNew) return { label: 'New', bg: '#CB843B', fg: '#ffffff' };
   return null;
 }
 
@@ -37,7 +37,7 @@ export default function ProductCard({ product: p }: { product: ProductVM }) {
     <motion.div
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 320, damping: 24 }}
-      className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-line bg-white transition-shadow hover:border-brand/40 hover:shadow-[0_16px_36px_-18px_rgba(17,19,21,.25)]"
+      className="group flex min-w-0 flex-col overflow-hidden rounded-[10px] border border-line bg-surface transition-shadow hover:border-brand/50 hover:shadow-[0_16px_36px_-18px_rgba(0,0,0,.45)]"
     >
       <div className="relative aspect-square overflow-hidden" style={{ background: TONES[p.tone] }}>
         <div className="tone-hatch absolute inset-0" />
@@ -52,7 +52,7 @@ export default function ProductCard({ product: p }: { product: ProductVM }) {
         </Link>
         {badge && (
           <span
-            className="pointer-events-none absolute left-2.5 top-2.5 rounded-md px-2 py-1 font-display text-[11px] font-bold tracking-[0.02em]"
+            className="pointer-events-none absolute left-2.5 top-2.5 rounded-[6px] px-2 py-1 font-display text-[11px] font-bold tracking-[0.02em]"
             style={{ background: badge.bg, color: badge.fg }}
           >
             {badge.label}
@@ -81,7 +81,7 @@ export default function ProductCard({ product: p }: { product: ProductVM }) {
         <Link href={`/p/${p.id}`} className="line-clamp-2 min-h-[2.5em] text-[14px] font-semibold leading-[1.25] hover:text-brand">
           {p.name}
         </Link>
-        <span className={`text-[11.5px] font-semibold ${soldOut ? 'text-sale' : low ? 'text-amber-ink' : 'text-[#1E8E3E]'}`}>
+        <span className={`text-[11.5px] font-semibold ${soldOut ? 'text-sale' : low ? 'text-amber-ink' : 'text-stock'}`}>
           {soldOut ? 'Out of stock' : low ? `Only ${p.totalStock} left` : 'In stock'}
         </span>
         <span className="flex flex-wrap items-baseline gap-2">
@@ -92,7 +92,7 @@ export default function ProductCard({ product: p }: { product: ProductVM }) {
           whileTap={{ scale: soldOut ? 1 : 0.96 }}
           disabled={soldOut}
           onClick={quickAdd}
-          className="mt-2 flex items-center justify-center gap-2 rounded-xl bg-dark py-2.5 text-[12.5px] font-bold text-white transition-colors hover:bg-brand disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-disabled"
+          className="mt-2 flex items-center justify-center gap-2 rounded-[6px] bg-dark py-2.5 text-[12.5px] font-bold text-white transition-colors hover:bg-brand disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-disabled"
         >
           <BagIcon width={14} height={14} /> Add to Cart
         </motion.button>

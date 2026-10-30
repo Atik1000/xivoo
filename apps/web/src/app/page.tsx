@@ -33,11 +33,11 @@ export default async function Home() {
       {/* Hero banner — single static banner (no carousel) */}
       <section className="mx-auto mt-5 max-w-[1280px] px-4 sm:px-6">
         <Reveal>
-          <div className="relative grid min-h-[300px] overflow-hidden rounded-2xl bg-dark text-white md:grid-cols-[1.1fr_1fr] lg:min-h-[360px]">
+          <div className="relative grid min-h-[300px] overflow-hidden rounded-[20px] bg-dark text-white md:grid-cols-[1.1fr_1fr] lg:min-h-[360px]">
             <div
               aria-hidden
               className="pointer-events-none absolute -right-24 -top-24 h-[380px] w-[380px] rounded-full opacity-30"
-              style={{ background: 'radial-gradient(closest-side, #FF6A00, transparent 70%)' }}
+              style={{ background: 'radial-gradient(closest-side, rgba(203,132,59,.5), transparent 70%)' }}
             />
             <div className="relative flex flex-col items-start justify-center gap-4 p-7 sm:p-10">
               <span className="rounded-md border border-brand/50 bg-brand/15 px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-[0.14em] text-brand">
@@ -53,13 +53,13 @@ export default async function Home() {
               <div className="mt-1 flex flex-wrap gap-3">
                 <Link
                   href="/c/all"
-                  className="group flex items-center gap-2 rounded-xl bg-brand px-5 py-3 font-display text-[13.5px] font-bold uppercase tracking-[0.04em] transition-transform hover:scale-[1.03]"
+                  className="group flex items-center gap-2 rounded-[8px] bg-brand px-5 py-3 font-display text-[13.5px] font-bold uppercase tracking-[0.04em] transition-transform hover:scale-[1.03]"
                 >
                   Shop Now
                   <ArrowRightIcon size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
                 {coupon && (
-                  <span className="flex items-center gap-2 rounded-xl border border-dashed border-white/30 px-4 py-3 text-[13px] font-semibold text-white/80">
+                  <span className="flex items-center gap-2 rounded-[8px] border border-dashed border-white/30 px-4 py-3 text-[13px] font-semibold text-white/80">
                     Use <span className="font-display font-bold text-brand">{coupon.code}</span> — {coupon.label.split(',')[0]}
                   </span>
                 )}
@@ -89,9 +89,9 @@ export default async function Home() {
         <RevealGroup className="mt-5 grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(140px,1fr))]" stagger={0.05}>
           {categories.map((c) => (
             <RevealItem key={c.key}>
-              <Link href={`/c/${c.key}`} className="group block rounded-2xl border border-line bg-white p-3 text-center transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-md">
+              <Link href={`/c/${c.key}`} className="group block rounded-[10px] border border-line bg-surface p-3 text-center transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-md">
                 <span
-                  className="relative mx-auto block aspect-square w-full overflow-hidden rounded-xl"
+                  className="relative mx-auto block aspect-square w-full overflow-hidden rounded-[8px]"
                   style={{ background: c.tone ? TONES[c.tone] : '#EFEFEF' }}
                 >
                   {c.img && (
@@ -130,7 +130,7 @@ export default async function Home() {
           <div className="grid gap-4 md:grid-cols-2">
             {campaigns.slice(0, 2).map((c) => (
               <Reveal key={c.key}>
-                <Link href={`/c/seasonal?sub=${c.key}`} className="group relative block h-[150px] overflow-hidden rounded-2xl bg-dark sm:h-[180px]">
+                <Link href={`/c/seasonal?sub=${c.key}`} className="group relative block h-[150px] overflow-hidden rounded-[14px] bg-dark sm:h-[180px]">
                   <PImg
                     src={c.img}
                     alt={c.title}
@@ -181,7 +181,7 @@ export default async function Home() {
             const save = (b.was ?? b.price) - b.price;
             return (
               <RevealItem key={b.id}>
-                <div className="flex h-full flex-col rounded-2xl border border-line bg-white p-5 transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-md">
+                <div className="flex h-full flex-col rounded-[10px] border border-line bg-surface p-5 transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-md">
                   <div className="flex gap-2.5">
                     {(b.includes ?? []).map((id) => {
                       const inc = products.find((p) => p.id === id);
@@ -206,7 +206,7 @@ export default async function Home() {
                     </div>
                     <Link
                       href={`/p/${b.id}`}
-                      className="rounded-xl bg-dark px-4 py-2.5 text-[12.5px] font-bold text-white transition-colors hover:bg-brand"
+                      className="rounded-[6px] bg-dark px-4 py-2.5 text-[12.5px] font-bold text-white transition-colors hover:bg-brand"
                     >
                       View Combo
                     </Link>
@@ -220,7 +220,7 @@ export default async function Home() {
 
       {/* Benefit strip */}
       <section className="mx-auto mt-14 max-w-[1280px] px-4 sm:px-6">
-        <div className="grid overflow-hidden rounded-2xl border border-line bg-white sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid overflow-hidden rounded-[14px] border border-line bg-surface sm:grid-cols-2 lg:grid-cols-5">
           {(
             [
               [ShieldIcon, '100% Genuine Products', 'Official warranty where marked'],
@@ -231,7 +231,7 @@ export default async function Home() {
             ] as const
           ).map(([Icon, title, line], i) => (
             <div key={title} className={`flex items-center gap-3.5 p-5 ${i > 0 ? 'border-t border-line lg:border-l lg:border-t-0' : ''}`}>
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[10px] bg-brand-50 text-brand">
                 <Icon />
               </span>
               <span>

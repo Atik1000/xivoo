@@ -121,7 +121,7 @@ export default function CheckoutPage() {
           onChange={(e) => set(key, e.target.value)}
           rows={2}
           placeholder={opts.placeholder}
-          className={`mt-1.5 w-full rounded-xl border bg-white px-4 py-3 text-[15px] font-normal outline-none focus:border-brand ${errors[key] ? 'border-sale' : 'border-input'}`}
+          className={`mt-1.5 w-full rounded-xl border bg-surface px-4 py-3 text-[15px] font-normal outline-none focus:border-brand ${errors[key] ? 'border-sale' : 'border-input'}`}
         />
       ) : (
         <input
@@ -129,7 +129,7 @@ export default function CheckoutPage() {
           value={form[key]}
           onChange={(e) => set(key, e.target.value)}
           placeholder={opts.placeholder}
-          className={`mt-1.5 w-full rounded-xl border bg-white px-4 py-3 text-[15px] font-normal outline-none focus:border-brand ${errors[key] ? 'border-sale' : 'border-input'}`}
+          className={`mt-1.5 w-full rounded-xl border bg-surface px-4 py-3 text-[15px] font-normal outline-none focus:border-brand ${errors[key] ? 'border-sale' : 'border-input'}`}
         />
       )}
       {errors[key] && <span className="mt-1 block text-[13px] font-semibold text-sale">{errors[key]}</span>}
@@ -148,7 +148,7 @@ export default function CheckoutPage() {
       <div className="mt-8 flex flex-wrap items-start gap-6">
         <div className="min-w-0 flex-[999_1_520px] space-y-5">
           {/* 1. Contact */}
-          <motion.section {...card(0)} className="rounded-[20px] border border-line bg-white p-[22px]">
+          <motion.section {...card(0)} className="rounded-[20px] border border-line bg-surface p-[22px]">
             <h2 className="text-[17px] font-bold">1. Contact</h2>
             <div className="mt-4 grid gap-3.5 md:grid-cols-2">
               {field('name', 'Full name')}
@@ -158,7 +158,7 @@ export default function CheckoutPage() {
           </motion.section>
 
           {/* 2. Delivery */}
-          <motion.section {...card(1)} className="rounded-[20px] border border-line bg-white p-[22px]">
+          <motion.section {...card(1)} className="rounded-[20px] border border-line bg-surface p-[22px]">
             <h2 className="text-[17px] font-bold">2. Delivery</h2>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               {(zones ?? []).map((z) => {
@@ -171,8 +171,8 @@ export default function CheckoutPage() {
                     onClick={() => set('zone', z.key)}
                     className="rounded-2xl border p-4 text-left transition-colors disabled:cursor-not-allowed"
                     style={{
-                      background: active ? '#FFF6EF' : '#fff',
-                      borderColor: active ? '#FF6A00' : '#E4E4E4',
+                      background: active ? 'var(--color-brand-25)' : 'var(--color-surface)',
+                      borderColor: active ? 'var(--color-brand)' : 'var(--color-line)',
                       opacity: z.disabled ? 0.55 : 1,
                     }}
                   >
@@ -194,7 +194,7 @@ export default function CheckoutPage() {
           </motion.section>
 
           {/* 3. Payment */}
-          <motion.section {...card(2)} className="rounded-[20px] border border-line bg-white p-[22px]">
+          <motion.section {...card(2)} className="rounded-[20px] border border-line bg-surface p-[22px]">
             <h2 className="text-[17px] font-bold">3. Payment</h2>
             <div className="mt-4 space-y-3">
               <div className="flex items-center gap-3 rounded-2xl border border-brand bg-brand-25 p-4">
@@ -218,7 +218,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Summary */}
-        <motion.aside {...card(1)} className="sticky top-[96px] w-full flex-[1_1_300px] rounded-[20px] border border-line bg-white p-[22px] lg:max-w-[360px]">
+        <motion.aside {...card(1)} className="sticky top-[96px] w-full flex-[1_1_300px] rounded-[20px] border border-line bg-surface p-[22px] lg:max-w-[360px]">
           <h2 className="text-[17px] font-bold">Your order</h2>
           <ul className="mt-4 space-y-3">
             {(lines ?? []).map((l) => (

@@ -6,7 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { COLOR_SWATCHES, fmt, sizedImg, type Campaign, type Category } from '@xivoo/shared';
 import type { ProductVM } from '@/lib/api';
-import { BagIcon, HeartIcon, LogoMark, SearchIcon } from './icons';
+import { BagIcon, HeartIcon, SearchIcon } from './icons';
+import ThemeToggle from './theme-toggle';
 import PImg from './pimg';
 import { useStore } from './store';
 
@@ -69,7 +70,7 @@ export default function Header({ categories, subcategories, campaigns, products 
   return (
     <header className="relative z-40">
       {/* Tier 1 — top links bar */}
-      <div className="border-b border-white/10 bg-[#0B0C0D] text-[12px] text-white/60">
+      <div className="border-b border-white/10 bg-dark text-[12px] text-white/60">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-4 py-1.5 sm:px-6">
           <span className="flex gap-4">
             <Link href="/faq" className="hover:text-white">FAQ</Link>
@@ -84,11 +85,11 @@ export default function Header({ categories, subcategories, campaigns, products 
       </div>
 
       {/* Tier 2 — main bar: logo · search · quick links · icons */}
-      <div className="bg-dark text-white">
+      <div className="border-b border-line bg-cream text-ink">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3.5 sm:px-6">
-          <Link href="/" className="flex shrink-0 items-center gap-2" aria-label="Xivoo home">
-            <LogoMark size={34} />
-            <span className="font-display text-[21px] font-bold">Xivoo</span>
+          <Link href="/" aria-label="Xivoo home" className="shrink-0 rounded-[10px] bg-white px-2.5 py-1.5 shadow-sm ring-1 ring-black/5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Xivoo" className="h-6 w-auto" />
           </Link>
 
           {/* Search */}
@@ -98,7 +99,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                 e.preventDefault();
                 submit();
               }}
-              className="flex items-center rounded-full bg-white p-1 pl-4"
+              className="flex items-center rounded-[10px] border border-line bg-surface-2 p-1 pl-4"
             >
               <input
                 value={q}
@@ -113,7 +114,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                 aria-label="Search products"
                 className="w-full min-w-0 bg-transparent text-[14px] text-ink outline-none placeholder:text-muted-2"
               />
-              <button type="submit" aria-label="Search" className="grid h-9 w-11 shrink-0 place-items-center rounded-full bg-brand text-white transition-colors hover:bg-[#E55F00]">
+              <button type="submit" aria-label="Search" className="grid h-9 w-11 shrink-0 place-items-center rounded-[8px] bg-brand text-white transition-colors hover:opacity-90">
                 <SearchIcon width={17} height={17} />
               </button>
             </form>
@@ -124,7 +125,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-line bg-white p-2 text-ink shadow-[0_24px_50px_-22px_rgba(17,19,21,.4)]"
+                  className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-[10px] border border-line bg-surface p-2 text-ink shadow-[0_24px_50px_-22px_rgba(17,19,21,.4)]"
                 >
                   {results.length ? (
                     results.map((p) => (
@@ -155,7 +156,7 @@ export default function Header({ categories, subcategories, campaigns, products 
           </div>
 
           {/* Quick links */}
-          <nav className="hidden items-center gap-4 text-[13.5px] font-semibold text-white/75 lg:flex">
+          <nav className="hidden items-center gap-4 text-[13.5px] font-semibold text-muted lg:flex">
             <Link href="/c/offers" className="hover:text-brand">Offers</Link>
             <Link href="/c/combos" className="hover:text-brand">Combos</Link>
             {campaigns.length > 0 && <Link href="/c/seasonal" className="hover:text-brand">Campaigns</Link>}
@@ -163,10 +164,11 @@ export default function Header({ categories, subcategories, campaigns, products 
 
           {/* Icons */}
           <div className="ml-auto flex items-center gap-1.5">
+            <ThemeToggle />
             <button
               aria-label="Wishlist"
               onClick={() => say(wish.length ? `${wish.length} item${wish.length > 1 ? 's' : ''} in your wishlist.` : 'Your wishlist is empty — tap a heart to save items.')}
-              className="relative grid h-10 w-10 place-items-center rounded-full transition-colors hover:bg-white/10"
+              className="relative grid h-10 w-10 place-items-center rounded-xl transition-colors hover:bg-surface-2"
             >
               <HeartIcon width={19} height={19} />
               {wish.length > 0 && (
@@ -178,7 +180,7 @@ export default function Header({ categories, subcategories, campaigns, products 
             <Link
               href="/cart"
               aria-label="Cart"
-              className="flex h-10 items-center gap-2 rounded-full bg-brand px-4 text-[13.5px] font-bold transition-colors hover:bg-[#E55F00]"
+              className="flex h-10 items-center gap-2 rounded-[10px] bg-dark px-4 text-[13.5px] font-bold text-white transition-colors hover:bg-brand"
             >
               <BagIcon width={17} height={17} />
               <span className="max-sm:hidden">Cart</span>
@@ -187,7 +189,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                 initial={{ scale: 0.5 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 18 }}
-                className="grid h-[19px] min-w-[19px] place-items-center rounded-full bg-white px-1 text-[11px] font-bold text-ink"
+                className="grid h-[19px] min-w-[19px] place-items-center rounded-full bg-surface px-1 text-[11px] font-bold text-ink"
               >
                 {cartCount}
               </motion.span>
@@ -197,14 +199,14 @@ export default function Header({ categories, subcategories, campaigns, products 
       </div>
 
       {/* Tier 3 — category menu bar */}
-      <div className="relative border-b border-line bg-white" onMouseLeave={() => setMenu(null)}>
+      <div className="relative rounded-b-[20px] bg-dark text-white shadow-[0_14px_30px_-18px_rgba(0,0,0,.6)]" onMouseLeave={() => setMenu(null)}>
         <div className="mx-auto flex max-w-[1280px] items-center gap-1 px-4 sm:px-6">
           {/* Explore all dropdown */}
           <div className="relative shrink-0">
             <button
               onClick={() => setExploreOpen((v) => !v)}
               aria-expanded={exploreOpen}
-              className="flex items-center gap-2 bg-brand px-4 py-3 font-display text-[12.5px] font-bold uppercase tracking-[0.06em] text-white transition-colors hover:bg-dark"
+              className="flex items-center gap-2 rounded-bl-[20px] bg-brand px-4 py-3.5 font-display text-[12.5px] font-bold uppercase tracking-[0.06em] text-white transition-colors hover:opacity-90"
             >
               ☰ Explore All
             </button>
@@ -215,7 +217,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.14 }}
-                  className="absolute left-0 top-full z-50 w-[260px] rounded-b-2xl border border-line bg-white p-2 shadow-[0_24px_50px_-22px_rgba(17,19,21,.35)]"
+                  className="absolute left-0 top-full z-50 w-[260px] rounded-b-[10px] border border-line bg-surface p-2 shadow-[0_24px_50px_-22px_rgba(17,19,21,.35)]"
                 >
                   {categories.map((c) => (
                     <Link
@@ -246,7 +248,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                   href={`/c/${c.key}`}
                   onMouseEnter={() => setMenu(hasMenu ? c.key : null)}
                   className={`whitespace-nowrap border-b-2 px-3.5 py-3 text-[13.5px] font-semibold transition-colors ${
-                    active ? 'border-brand text-brand' : 'border-transparent text-ink-2 hover:text-brand'
+                    active ? 'border-brand text-brand' : 'border-transparent text-white/75 hover:text-brand'
                   }`}
                 >
                   {c.crumb}
@@ -254,7 +256,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                 </Link>
               );
             })}
-            <Link href="/c/offers" className="whitespace-nowrap px-3.5 py-3 text-[13.5px] font-bold text-sale hover:underline">
+            <Link href="/c/offers" className="whitespace-nowrap px-3.5 py-3 text-[13.5px] font-bold text-[#FF7575] hover:underline">
               Offers
             </Link>
           </nav>
@@ -268,7 +270,7 @@ export default function Header({ categories, subcategories, campaigns, products 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.14 }}
-              className="absolute left-1/2 top-full z-40 w-[264px] -translate-x-1/2 rounded-2xl border border-line bg-white p-2 shadow-[0_24px_50px_-22px_rgba(17,19,21,.35)]"
+              className="absolute left-1/2 top-full z-40 w-[264px] -translate-x-1/2 rounded-[10px] border border-line bg-surface p-2 shadow-[0_24px_50px_-22px_rgba(17,19,21,.35)]"
             >
               <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.1em] text-muted-2">
                 {categories.find((c) => c.key === menu)?.title}
