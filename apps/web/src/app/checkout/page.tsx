@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import PImg from '@/components/pimg';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -224,7 +224,7 @@ export default function CheckoutPage() {
             {(lines ?? []).map((l) => (
               <li key={`${l.productId}-${l.variant}-${l.color}`} className="flex items-center gap-3">
                 <span className="relative block h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-surface-2">
-                  <Image src={sizedImg(l.p, 88, 112)} alt="" fill sizes="44px" className="object-cover" />
+                  <PImg src={sizedImg(l.p, 88, 112)} alt="" fill sizes="44px" className="object-cover" />
                   <span className="absolute -right-0 -top-0 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-ink px-1 text-[11px] font-bold text-white">
                     {l.qty}
                   </span>

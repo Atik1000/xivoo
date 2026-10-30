@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
+import PImg from './pimg';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -73,9 +73,6 @@ export default function Header({ categories, subcategories, campaigns, products 
 
   const subsFor = (k: string): { label: string; href: string }[] =>
     (subcategories[k] ?? []).map((s) => ({ label: s, href: `/c/${k}?sub=${encodeURIComponent(s)}` }));
-
-  const featureFor = (k: string): ProductVM | undefined =>
-    products.find((p) => p.cat === k && p.isNew) ?? products.find((p) => p.cat === k);
 
   const activeKey = pathname === '/' ? 'home' : pathname.startsWith('/c/') ? pathname.split('/')[2]?.split('?')[0] : '';
   const cartCount = cart.reduce((a, l) => a + l.qty, 0);
@@ -217,7 +214,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                           className="flex items-center gap-3 rounded-2xl p-2 hover:bg-surface-2"
                         >
                           <span className="relative block h-12 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-2">
-                            <Image src={sizedImg(p, 120, 150)} alt="" fill sizes="40px" className="object-cover" />
+                            <PImg src={sizedImg(p, 120, 150)} alt="" fill sizes="40px" className="object-cover" />
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-semibold">{p.name}</span>
@@ -237,59 +234,35 @@ export default function Header({ categories, subcategories, campaigns, products 
             )}
           </AnimatePresence>
 
-          {/* Category dropdown */}
+          {/* Category dropdown — clean simple list */}
           <AnimatePresence>
             {menu && subcategories[menu] && !searchOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.16, ease: 'easeOut' }}
-                className="absolute inset-x-0 top-full z-40 mt-2 hidden rounded-3xl border border-line bg-white p-7 shadow-[0_28px_60px_-24px_rgba(17,19,21,.4)] lg:block"
+                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                transition={{ duration: 0.14, ease: 'easeOut' }}
+                className="absolute left-1/2 top-full z-40 mt-2 hidden w-[264px] -translate-x-1/2 rounded-2xl border border-line bg-white p-2 shadow-[0_24px_50px_-22px_rgba(17,19,21,.35)] lg:block"
               >
-                <div className="grid gap-10 md:grid-cols-[1fr_1fr_240px]">
-                  <div>
-                    <h3 className="font-display text-lg font-semibold">
-                      {categories.find((c) => c.key === menu)?.title}
-                    </h3>
-                    <ul className="mt-3.5 space-y-2">
-                      {subsFor(menu).map((s) => (
-                        <li key={s.label}>
-                          <Link href={s.href} className="text-[15px] text-ink-2 hover:text-brand">
-                            {s.label}
-                          </Link>
-                        </li>
-                      ))}
-                      <li className="pt-1">
-                        <Link href={`/c/${menu}`} className="text-sm font-bold text-brand hover:underline">
-                          View all →
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                  <p className="hidden max-w-[300px] self-center text-[15px] leading-relaxed text-muted md:block">
-                    {categories.find((c) => c.key === menu)?.blurb}
-                  </p>
-                  {(() => {
-                    const fp = featureFor(menu);
-                    if (!fp) return <span />;
-                    return (
-                      <Link href={`/p/${fp.id}`} className="group hidden md:block">
-                        <span className="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-surface-2">
-                          <Image
-                            src={sizedImg(fp, 400, 500)}
-                            alt={fp.name}
-                            fill
-                            sizes="240px"
-                            className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                          />
-                        </span>
-                        <span className="mt-3 block text-[11px] font-bold uppercase tracking-[0.08em] text-brand">Featured</span>
-                        <span className="block text-sm font-semibold">{fp.name}</span>
-                        <span className="block text-sm font-bold">{fmt(fp.price)}</span>
-                      </Link>
-                    );
-                  })()}
+                <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.1em] text-muted-2">
+                  {categories.find((c) => c.key === menu)?.title}
+                </p>
+                {subsFor(menu).map((sub) => (
+                  <Link
+                    key={sub.label}
+                    href={sub.href}
+                    className="block rounded-xl px-3 py-2 text-[14px] font-medium text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
+                  >
+                    {sub.label}
+                  </Link>
+                ))}
+                <div className="mt-1 border-t border-line-2 pt-1">
+                  <Link
+                    href={`/c/${menu}`}
+                    className="block rounded-xl px-3 py-2 text-[13px] font-bold text-brand transition-colors hover:bg-brand-25"
+                  >
+                    View all →
+                  </Link>
                 </div>
               </motion.div>
             )}

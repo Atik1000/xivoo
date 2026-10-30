@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import PImg from '@/components/pimg';
 import Link from 'next/link';
 import { use, useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
@@ -112,7 +112,7 @@ export default function OrderPage({ params }: { params: Promise<{ no: string }> 
           {order.items.map((it) => (
             <li key={it.sku} className="flex items-center gap-3.5">
               <span className="relative block h-16 w-[52px] shrink-0 overflow-hidden rounded-lg bg-surface-2">
-                <Image src={it.img} alt="" fill sizes="52px" className="object-cover" />
+                <PImg src={it.img} alt="" fill sizes="52px" className="object-cover" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold">{it.name}</span>

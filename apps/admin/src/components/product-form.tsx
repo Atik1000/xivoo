@@ -1,7 +1,7 @@
 'use client';
 
-import { Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ImageUp, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { COLOR_SWATCHES, SUBCATEGORIES, type Campaign, type Product } from '@xivoo/shared';
 import Modal, { Field, inputCls } from './modal';
 import { ApiError, patch, post, useApi } from '@/lib/api';
@@ -41,6 +41,8 @@ export default function ProductForm({
     desc: '', details: '', warranty: '', isNew: true,
   });
   const [variants, setVariants] = useState<VariantRow[]>([{ key: 'One size', qty: '10' }]);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [imgBusy, setImgBusy] = useState(false);
   const [colors, setColors] = useState<string[]>(['black']);
   const [seasons, setSeasons] = useState<string[]>([]);
 
@@ -73,6 +75,29 @@ export default function ProductForm({
   }, [open, editing]);
 
   const set = (k: keyof typeof form, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+
+  /** Reads a picked file, downscales it to ≤900px JPEG and stores it as a data URL. */
+  const pickImage = (file: File) => {
+    setImgBusy(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new window.Image();
+      image.onload = () => {
+        const max = 900;
+        const scale = Math.min(1, max / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+        canvas.getContext('2d')!.drawImage(image, 0, 0, canvas.width, canvas.height);
+        set('img', canvas.toDataURL('image/jpeg', 0.82));
+        setImgBusy(false);
+      };
+      image.onerror = () => setImgBusy(false);
+      image.src = String(reader.result);
+    };
+    reader.onerror = () => setImgBusy(false);
+    reader.readAsDataURL(file);
+  };
 
   const toggle = (arr: string[], setArr: (v: string[]) => void, v: string) =>
     setArr(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -151,8 +176,49 @@ export default function ProductForm({
         <Field label="Original price (optional, shows a Sale badge)" error={fieldErr.was}>
           <input className={inputCls} type="number" min={1} value={form.was} onChange={(e) => set('was', e.target.value)} />
         </Field>
-        <Field label="Image URL (https)" error={fieldErr.img} span>
-          <input className={inputCls} value={form.img} onChange={(e) => set('img', e.target.value)} />
+        <Field label="Product image" error={fieldErr.img} span>
+          <span className="flex flex-wrap items-start gap-4">
+            <span className="relative block h-[120px] w-[96px] shrink-0 overflow-hidden rounded-xl border border-line bg-surface-2">
+              {form.img && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={form.img} alt="Product preview" className="h-full w-full object-cover" />
+              )}
+              {imgBusy && (
+                <span className="absolute inset-0 grid place-items-center bg-white/70 text-[11px] font-bold text-muted">
+                  Processing…
+                </span>
+              )}
+            </span>
+            <span className="min-w-[220px] flex-1 space-y-2.5">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) pickImage(f);
+                  e.target.value = '';
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="flex items-center gap-2 rounded-full bg-dark px-4 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-brand"
+              >
+                <ImageUp size={15} /> Choose image from PC
+              </button>
+              <span className="block text-[12px] text-muted">
+                JPG, PNG or WebP — resized to 900px automatically. Or paste an https image URL:
+              </span>
+              <input
+                className={inputCls}
+                placeholder="https://…"
+                value={form.img.startsWith('data:') ? '' : form.img}
+                onChange={(e) => set('img', e.target.value)}
+              />
+            </span>
+          </span>
         </Field>
         <Field label="Description" error={fieldErr.desc} span>
           <textarea className={inputCls} rows={2} value={form.desc} onChange={(e) => set('desc', e.target.value)} />

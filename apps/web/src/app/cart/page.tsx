@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
+import PImg from '@/components/pimg';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { COLOR_SWATCHES, fmt, sizedImg } from '@xivoo/shared';
@@ -125,7 +125,7 @@ export default function CartPage() {
                     className={`flex flex-wrap items-center gap-4 p-5 ${i > 0 ? 'border-t border-line-2' : ''}`}
                   >
                     <Link href={`/p/${l.p.id}`} className="relative block h-[110px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-surface-2">
-                      <Image src={sizedImg(l.p, 176, 220)} alt={l.p.name} fill sizes="88px" className="object-cover" />
+                      <PImg src={sizedImg(l.p, 176, 220)} alt={l.p.name} fill sizes="88px" className="object-cover" />
                     </Link>
                     <div className="min-w-[160px] flex-1">
                       <Link href={`/p/${l.p.id}`} className="text-[15px] font-semibold hover:text-brand">{l.p.name}</Link>

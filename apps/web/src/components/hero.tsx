@@ -61,9 +61,6 @@ export default function Hero() {
               </motion.span>
             ))}
           </h1>
-          <motion.p variants={item} className="mt-4 text-[clamp(18px,2vw,24px)] font-semibold text-white/90">
-            প্রতিদিনের জীবন হোক আরও স্মার্ট।
-          </motion.p>
           <motion.p variants={item} className="mt-4 max-w-[460px] text-[16px] leading-relaxed text-white/65">
             Discover smart gadgets, audio essentials, and everyday accessories designed to make life
             easier — delivered across Bangladesh.

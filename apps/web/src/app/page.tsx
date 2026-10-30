@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import PImg from '@/components/pimg';
 import Link from 'next/link';
 import { CURATED, fmt, productImg, sizedImg } from '@xivoo/shared';
 import Faq from '@/components/faq';
@@ -77,7 +77,7 @@ export default async function Home() {
               style={{ aspectRatio: '3/4' }}
             >
               {c.img && (
-                <Image
+                <PImg
                   src={c.img}
                   alt={c.title}
                   fill
@@ -142,7 +142,7 @@ export default async function Home() {
                     </Link>
                   </div>
                   <div className="relative min-h-[200px]">
-                    <Image
+                    <PImg
                       src={c.img}
                       alt={c.title}
                       fill
@@ -196,7 +196,7 @@ export default async function Home() {
                       const inc = products.find((p) => p.id === id);
                       return (
                         <span key={id} className="relative block h-[72px] w-[58px] overflow-hidden rounded-lg bg-surface-2">
-                          <Image src={inc ? sizedImg(inc, 120, 150) : productImg(id, 120, 150)} alt="" fill sizes="58px" className="object-cover" />
+                          <PImg src={inc ? sizedImg(inc, 120, 150) : productImg(id, 120, 150)} alt="" fill sizes="58px" className="object-cover" />
                         </span>
                       );
                     })}

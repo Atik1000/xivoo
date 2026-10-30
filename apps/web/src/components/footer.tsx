@@ -84,7 +84,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-2 px-6 py-5 text-[13px] text-footer-legal">
           <span>© 2026 Xivoo. All prices in BDT (৳), including VAT where applicable.</span>
-          <span>English · বাংলা coming soon</span>
+          <span>Smart Finds. Better Living.</span>
         </div>
       </div>
     </footer>

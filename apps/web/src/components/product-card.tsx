@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import PImg from './pimg';
 import Link from 'next/link';
 import { COLOR_SWATCHES, TONES, fmt, type Product } from '@xivoo/shared';
 import type { ProductVM } from '@/lib/api';
@@ -27,7 +27,7 @@ export default function ProductCard({ product: p }: { product: ProductVM }) {
       <div className="relative aspect-[4/5] overflow-hidden rounded-[14px]" style={{ background: TONES[p.tone] }}>
         <div className="tone-hatch absolute inset-0" />
         <Link href={`/p/${p.id}`} aria-label={p.name} className="absolute inset-0">
-          <Image
+          <PImg
             src={p.img}
             alt={p.name}
             fill

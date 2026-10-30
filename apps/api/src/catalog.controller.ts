@@ -259,7 +259,9 @@ export class CatalogController {
     const colors = (input.colors ?? []).filter((c): c is ColorKey => c in COLOR_SWATCHES);
 
     const img = (input.img ?? '').trim();
-    if (!/^https:\/\/.+/.test(img)) errors.img = 'Image must be an https:// URL.';
+    const okHttps = /^https:\/\/.+/.test(img);
+    const okData = /^data:image\/(png|jpe?g|webp);base64,/.test(img) && img.length < 1_800_000;
+    if (!okHttps && !okData) errors.img = 'Pick an image file or paste an https:// URL.';
 
     const desc = (input.desc ?? '').trim();
     if (desc.length < 10) errors.desc = 'Description needs at least 10 characters.';

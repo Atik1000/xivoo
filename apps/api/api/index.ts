@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import express, { type Request, type Response } from 'express';
+import express, { json, urlencoded, type Request, type Response } from 'express';
 import { AppModule } from '../src/app.module';
 
 /**
@@ -15,7 +15,10 @@ let ready: Promise<void> | null = null;
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
     logger: ['error', 'warn'],
+    bodyParser: false,
   });
+  app.use(json({ limit: '3mb' }));
+  app.use(urlencoded({ extended: true, limit: '3mb' }));
   app.setGlobalPrefix('api/v1');
   app.enableCors({ origin: true });
   await app.init();
