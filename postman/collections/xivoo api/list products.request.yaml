@@ -1,0 +1,19 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/products'
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('products respond 200', () => pm.response.to.have.status(200));
+      pm.test('catalog is non-empty with integer taka prices and live stock', () => {
+        const list = pm.response.json();
+        pm.expect(list).to.be.an('array').with.length.above(20);
+        for (const p of list) {
+          pm.expect(p.id, 'id').to.be.a('string');
+          pm.expect(p.price, p.id + ' price').to.satisfy(Number.isInteger);
+          pm.expect(p.stock, p.id + ' stock').to.be.an('object');
+          pm.expect(p.totalStock, p.id + ' totalStock').to.be.a('number');
+        }
+      });

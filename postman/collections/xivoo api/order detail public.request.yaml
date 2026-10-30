@@ -1,0 +1,14 @@
+$kind: http-request
+name: 'order detail is public for confirmation pages'
+method: GET
+url: '{{base_url}}/orders/{{order_no}}'
+order: 10000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('order detail responds 200', () => pm.response.to.have.status(200));
+      pm.test('items carry snapshots', () => {
+        const o = pm.response.json();
+        pm.expect(o.items[0]).to.include.keys('name', 'sku', 'variant', 'unitPrice', 'qty');
+      });

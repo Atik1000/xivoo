@@ -1,0 +1,20 @@
+$kind: http-request
+name: 'stats summary for the dashboard'
+method: GET
+url: '{{base_url}}/stats/summary'
+order: 13000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('stats respond 200 with a token', () => pm.response.to.have.status(200));
+      pm.test('summary has the dashboard shape', () => {
+        const s = pm.response.json();
+        pm.expect(s.revenue).to.be.a('number');
+        pm.expect(s.revenueByDay).to.be.an('array').with.lengthOf(30);
+        pm.expect(s.byCategory).to.be.an('array');
+        pm.expect(s.topProducts).to.be.an('array');
+      });

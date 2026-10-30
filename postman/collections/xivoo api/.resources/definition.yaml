@@ -1,0 +1,8 @@
+$kind: collection
+name: Xivoo API
+description: Contract tests for the Xivoo REST API (apps/api/openapi.yaml). Run against a local API with postman/environments/local.yaml.
+variables:
+  - key: token
+    value: ''
+  - key: order_no
+    value: ''

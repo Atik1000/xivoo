@@ -1,0 +1,41 @@
+name: API contract tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared package and API
+        run: pnpm --filter @xivoo/shared build && pnpm --filter @xivoo/api build
+
+      - name: Start the API
+        run: |
+          node apps/api/dist/main.js &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4000/api/v1/health && break
+            sleep 1
+          done
+
+      - name: Install Postman CLI
+        run: curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+      - name: Run contract tests
+        run: postman collection run "postman/collections/xivoo api" -e postman/environments/local.yaml

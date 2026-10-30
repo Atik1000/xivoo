@@ -1,0 +1,19 @@
+$kind: http-request
+name: 'categories respect the strict scope'
+method: GET
+url: '{{base_url}}/categories'
+order: 3000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('categories respond 200', () => pm.response.to.have.status(200));
+      pm.test('Xivoo is a gadget brand, never a flower or gift shop (brief rule)', () => {
+        const titles = pm.response.json().map((c) => c.title.toLowerCase()).join(' ');
+        for (const banned of ['flower', 'bouquet', 'gift shop', 'clothing']) {
+          pm.expect(titles, 'must not contain "' + banned + '"').to.not.include(banned);
+        }
+        for (const required of ['audio', 'gadget', 'accessories']) {
+          pm.expect(titles, 'must contain "' + required + '"').to.include(required);
+        }
+      });

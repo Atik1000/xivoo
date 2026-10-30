@@ -1,0 +1,19 @@
+$kind: http-request
+name: 'skipping pipeline steps is rejected'
+method: PATCH
+url: '{{base_url}}/orders/{{order_no}}/status'
+order: 11000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{token}}'
+body:
+  type: json
+  content: |-
+    { "status": "Delivered" }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Pending → Delivered is 400', () => pm.response.to.have.status(400));

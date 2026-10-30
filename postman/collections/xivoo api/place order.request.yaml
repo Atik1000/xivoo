@@ -1,0 +1,31 @@
+$kind: http-request
+name: 'place a COD order'
+method: POST
+url: '{{base_url}}/orders'
+order: 8000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "customer": { "name": "Contract Test", "phone": "+88 017-1234 5678" },
+      "delivery": { "zone": "dhaka", "area": "Dhanmondi", "address": "House 1, Road 2" },
+      "items": [{ "productId": "g3", "variant": "One size", "qty": 1 }]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('order is created', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));
+      pm.test('order follows the business rules', () => {
+        const o = pm.response.json();
+        pm.expect(o.no).to.match(/^XIV-\d{6}-\d+$/);
+        pm.expect(o.status).to.eql('Pending');
+        pm.expect(o.payment).to.eql('Cash on Delivery');
+        pm.expect(o.total).to.eql(o.subtotal - o.discount + o.delivery.fee);
+        pm.expect(o.items[0].sku).to.match(/^XIV-/);
+        pm.expect(o.customer.phone).to.eql('01712345678'); // normalised
+        pm.collectionVariables.set('order_no', o.no);
+      });

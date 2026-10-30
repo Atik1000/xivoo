@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  /* Xivoo brand tokens (shared with the storefront) */
+  --color-brand: #FF6A00;
+  --color-dark: #111315;
+  --color-brand-50: #FFEDE0;
+  --color-brand-25: #FFF6EF;
+  --color-ink: #16181A;
+  --color-ink-2: #3A3F45;
+  --color-muted: #6B7076;
+  --color-muted-2: #9AA0A6;
+  --color-cream: #F5F5F5;
+  --color-surface-2: #EFEFEF;
+  --color-line: #E4E4E4;
+  --color-line-2: #ECECEC;
+  --color-input: #D8D8D8;
+  --color-amber: #FFB133;
+  --color-sale: #E02D2D;
+  --color-sale-tint: #FDE9E9;
+  --color-amber-tint: #FFF4D6;
+  --color-amber-ink: #8A6400;
+  --color-footer-text: #E8EAED;
+  --color-footer-legal: #9AA0A6;
+
+  --font-display: var(--font-space), ui-sans-serif, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, sans-serif;
+
+  --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}

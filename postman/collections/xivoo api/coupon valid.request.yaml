@@ -1,0 +1,25 @@
+$kind: http-request
+name: 'coupon XIVOO10 applies with cap'
+method: POST
+url: '{{base_url}}/coupons/validate'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "code": "XIVOO10",
+      "subtotal": 2500
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('validation responds 200', () => pm.response.to.have.status(200));
+      pm.test('10% of 2500 = 250, under the 400 cap', () => {
+        const j = pm.response.json();
+        pm.expect(j.valid).to.eql(true);
+        pm.expect(j.discount).to.eql(250);
+      });

@@ -1,0 +1,10 @@
+$kind: http-request
+name: 'orders list requires a session'
+method: GET
+url: '{{base_url}}/orders'
+order: 6000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('unauthenticated orders list is 401', () => pm.response.to.have.status(401));

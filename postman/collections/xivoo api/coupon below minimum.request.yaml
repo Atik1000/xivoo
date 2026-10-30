@@ -1,0 +1,26 @@
+$kind: http-request
+name: 'coupon below minimum is rejected with shortfall'
+method: POST
+url: '{{base_url}}/coupons/validate'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "code": "GADGET150",
+      "subtotal": 1800
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('validation responds 200', () => pm.response.to.have.status(200));
+      pm.test('invalid with an exact shortfall message', () => {
+        const j = pm.response.json();
+        pm.expect(j.valid).to.eql(false);
+        pm.expect(j.discount).to.eql(0);
+        pm.expect(j.message).to.include('more to use GADGET150');
+      });

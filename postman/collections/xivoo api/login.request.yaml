@@ -1,0 +1,26 @@
+$kind: http-request
+name: 'login as manager'
+method: POST
+url: '{{base_url}}/auth/login'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "manager@xivoo.test",
+      "password": "xivoo-manager"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('login succeeds', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));
+      pm.test('returns a token and the manager role', () => {
+        const j = pm.response.json();
+        pm.expect(j.token).to.be.a('string').with.length.above(20);
+        pm.expect(j.user.role).to.eql('manager');
+        pm.collectionVariables.set('token', j.token);
+      });

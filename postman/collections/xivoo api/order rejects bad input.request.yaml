@@ -1,0 +1,27 @@
+$kind: http-request
+name: 'order with invalid input is rejected per field'
+method: POST
+url: '{{base_url}}/orders'
+order: 9000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "customer": { "name": "A", "phone": "123" },
+      "delivery": { "zone": "nowhere", "area": "", "address": "x" },
+      "items": []
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('invalid order is 400', () => pm.response.to.have.status(400));
+      pm.test('field errors cover every problem', () => {
+        const e = pm.response.json().errors;
+        for (const k of ['name', 'phone', 'zone', 'area', 'address', 'items']) {
+          pm.expect(e, 'errors.' + k).to.have.property(k);
+        }
+      });

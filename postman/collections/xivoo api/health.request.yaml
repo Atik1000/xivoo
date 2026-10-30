@@ -1,0 +1,14 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/health'
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('health responds 200', () => pm.response.to.have.status(200));
+      pm.test('service identifies itself', () => {
+        const j = pm.response.json();
+        pm.expect(j.ok).to.eql(true);
+        pm.expect(j.service).to.eql('xivoo-api');
+      });
