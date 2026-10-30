@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import {
   ExternalLink,
+  Layers,
   LayoutDashboard,
   LogOut,
   Megaphone,
@@ -17,6 +18,7 @@ import { useAuth } from './auth';
 
 const NAV: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: '/', label: 'Dashboard', Icon: LayoutDashboard },
+  { href: '/categories', label: 'Categories', Icon: Layers },
   { href: '/products', label: 'Products', Icon: Package },
   { href: '/orders', label: 'Orders', Icon: ReceiptText },
   { href: '/marketing', label: 'Marketing', Icon: Megaphone },

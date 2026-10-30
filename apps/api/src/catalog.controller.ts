@@ -12,10 +12,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
-  CATEGORIES,
   COLOR_SWATCHES,
-  SUBCATEGORIES,
   TONES,
+  type Category,
   type ColorKey,
   type Product,
   type ToneKey,
@@ -23,7 +22,18 @@ import {
 import { AuthGuard, Roles } from './auth.guard';
 import { StoreService } from './store.service';
 
-const CAT_KEYS = ['audio', 'gadgets', 'accessories', 'seasonal', 'combos'] as const;
+const RESERVED_KEYS = ['all', 'offers', 'seasonal', 'home', 'cart', 'checkout', 'search', 'new'];
+const slugify = (t: string) =>
+  t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24);
+
+interface CategoryInput {
+  title?: string;
+  crumb?: string;
+  blurb?: string;
+  img?: string;
+  tone?: string;
+  subs?: string[];
+}
 
 interface ProductInput {
   name?: string;
@@ -54,7 +64,7 @@ export class CatalogController {
   @Get('categories')
   async categories() {
     await this.store.sync();
-    return CATEGORIES.map((c) => ({
+    return this.store.categories.map((c) => ({
       ...c,
       count: this.store.products.filter((p) =>
         c.key === 'seasonal' ? (p.season ?? []).length > 0 : p.cat === c.key,
@@ -63,8 +73,86 @@ export class CatalogController {
   }
 
   @Get('subcategories')
-  subcategories() {
-    return SUBCATEGORIES;
+  async subcategories() {
+    await this.store.sync();
+    return Object.fromEntries(this.store.categories.map((c) => [c.key, c.subs ?? []]));
+  }
+
+  @Post('categories')
+  @UseGuards(AuthGuard)
+  @Roles('owner', 'manager')
+  async createCategory(@Body() input: CategoryInput) {
+    await this.store.sync(0);
+    const data = this.validateCategory(input);
+    const key = slugify(data.title);
+    if (!key || RESERVED_KEYS.includes(key)) {
+      throw new BadRequestException({ message: 'Pick a different title.', errors: { title: 'That name is reserved.' } });
+    }
+    if (this.store.categories.some((c) => c.key === key)) {
+      throw new BadRequestException({ message: 'Category exists.', errors: { title: 'A category with that key already exists.' } });
+    }
+    const category: Category = { key, ...data };
+    this.store.categories.push(category);
+    await this.store.persist();
+    return { ...category, count: 0 };
+  }
+
+  @Patch('categories/:key')
+  @UseGuards(AuthGuard)
+  @Roles('owner', 'manager')
+  async updateCategory(@Param('key') key: string, @Body() input: CategoryInput) {
+    await this.store.sync(0);
+    const c = this.store.categories.find((x) => x.key === key);
+    if (!c) throw new NotFoundException(`No category '${key}'`);
+    const data = this.validateCategory({
+      title: input.title ?? c.title,
+      crumb: input.crumb ?? c.crumb,
+      blurb: input.blurb ?? c.blurb,
+      img: input.img ?? c.img,
+      tone: input.tone ?? c.tone,
+      subs: input.subs ?? c.subs,
+    });
+    Object.assign(c, data);
+    await this.store.persist();
+    return c;
+  }
+
+  @Delete('categories/:key')
+  @UseGuards(AuthGuard)
+  @Roles('owner', 'manager')
+  async deleteCategory(@Param('key') key: string) {
+    await this.store.sync(0);
+    const c = this.store.categories.find((x) => x.key === key);
+    if (!c) throw new NotFoundException(`No category '${key}'`);
+    if (c.system) throw new BadRequestException(`"${c.title}" is a system category and cannot be deleted.`);
+    const used = this.store.products.filter((p) => p.cat === key).length;
+    if (used > 0) {
+      throw new BadRequestException(`Move or delete the ${used} product(s) in "${c.title}" first.`);
+    }
+    this.store.categories.splice(this.store.categories.indexOf(c), 1);
+    await this.store.persist();
+    return { ok: true, key };
+  }
+
+  private validateCategory(input: CategoryInput) {
+    const errors: Record<string, string> = {};
+    const title = (input.title ?? '').trim();
+    if (title.length < 3) errors.title = 'Title needs at least 3 characters.';
+    const crumb = (input.crumb ?? '').trim() || title.split(' ')[0];
+    const blurb = (input.blurb ?? '').trim();
+    const img = (input.img ?? '').trim();
+    if (img) {
+      const ok = /^https:\/\/.+/.test(img) || (/^data:image\/(png|jpe?g|webp);base64,/.test(img) && img.length < 1_800_000);
+      if (!ok) errors.img = 'Pick an image file or paste an https:// URL.';
+    }
+    const subs = [
+      ...new Set((input.subs ?? []).map((x) => String(x).trim()).filter(Boolean)),
+    ];
+    if (Object.keys(errors).length) {
+      throw new BadRequestException({ message: 'Please fix the highlighted fields.', errors });
+    }
+    const tone = (input.tone && input.tone in TONES ? input.tone : 'mist') as ToneKey;
+    return { title, crumb, blurb, img: img || undefined, tone, subs };
   }
 
   @Get('campaigns')
@@ -145,7 +233,7 @@ export class CatalogController {
     if (q) {
       const toks = q.toLowerCase().split(/\s+/).filter(Boolean);
       list = list.filter((p) => {
-        const c = CATEGORIES.find((x) => x.key === p.cat);
+        const c = this.store.categories.find((x) => x.key === p.cat);
         const hay = [
           p.name, p.sub, c?.title ?? '', c?.crumb ?? '', p.desc,
           ...p.colors.map((x) => COLOR_SWATCHES[x]?.[0] ?? x),
@@ -244,8 +332,8 @@ export class CatalogController {
     if (name.length < 3) errors.name = 'Name needs at least 3 characters.';
 
     const cat = (input.cat ?? '') as Product['cat'];
-    if (!CAT_KEYS.includes(cat as (typeof CAT_KEYS)[number]) || cat === 'seasonal') {
-      errors.cat = 'Pick a category (audio, gadgets, accessories or combos).';
+    if (cat === 'seasonal' || !this.store.categories.some((c) => c.key === cat)) {
+      errors.cat = 'Pick one of the existing categories.';
     }
 
     const sub = (input.sub ?? '').trim();

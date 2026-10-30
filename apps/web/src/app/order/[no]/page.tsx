@@ -101,9 +101,16 @@ export default function OrderPage({ params }: { params: Promise<{ no: string }> 
           </div>
         ))}
       </div>
-      <p className="mt-4 text-center text-[13px] text-muted">
-        We&apos;ll confirm by phone. Tracking appears here once your parcel is handed to the courier.
-      </p>
+      {order.meta?.trackingId ? (
+        <p className="mt-4 text-center text-[13px] text-muted">
+          Shipped via <strong className="text-ink">{order.meta.courier}</strong> · tracking{' '}
+          <span className="font-mono font-bold text-ink">{order.meta.trackingId}</span>
+        </p>
+      ) : (
+        <p className="mt-4 text-center text-[13px] text-muted">
+          We&apos;ll confirm by phone. Tracking appears here once your parcel is handed to the courier.
+        </p>
+      )}
 
       {/* Items */}
       <div className="mt-9 rounded-[20px] border border-line bg-white p-[22px]">

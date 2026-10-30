@@ -98,11 +98,11 @@ const CAT_KW: Record<string, string> = {
 };
 
 export const CATEGORIES: Category[] = [
-  { key: 'audio', title: 'Audio & Earbuds', crumb: 'Audio', blurb: 'Wireless earbuds, headphones, speakers and everything that sounds good.', tone: 'mist' },
-  { key: 'gadgets', title: 'Smart Gadgets', crumb: 'Gadgets', blurb: 'Smartwatches, smart home and desk tech that makes every day easier.', tone: 'sky' },
-  { key: 'accessories', title: 'Mobile Accessories', crumb: 'Accessories', blurb: 'Chargers, cables, power banks, stands and holders for every phone.', tone: 'butter' },
-  { key: 'seasonal', title: 'Campaigns & Deals', crumb: 'Campaigns', blurb: 'Limited-time drops and festive tech deals.', tone: 'clay' },
-  { key: 'combos', title: 'Combo Deals', crumb: 'Combos', blurb: 'Curated sets priced below buying each item separately.', tone: 'sage' },
+  { key: 'audio', title: 'Audio & Earbuds', crumb: 'Audio', blurb: 'Wireless earbuds, headphones, speakers and everything that sounds good.', tone: 'mist', subs: ['Wireless earbuds', 'Headphones', 'Speakers', 'Neckbands & more'] },
+  { key: 'gadgets', title: 'Smart Gadgets', crumb: 'Gadgets', blurb: 'Smartwatches, smart home and desk tech that makes every day easier.', tone: 'sky', subs: ['Smart watches', 'Smart home', 'Desk & work', 'Drones & cameras'] },
+  { key: 'accessories', title: 'Mobile Accessories', crumb: 'Accessories', blurb: 'Chargers, cables, power banks, stands and holders for every phone.', tone: 'butter', subs: ['Chargers & adapters', 'Cables & hubs', 'Power banks', 'Holders & stands'] },
+  { key: 'seasonal', title: 'Campaigns & Deals', crumb: 'Campaigns', blurb: 'Limited-time drops and festive tech deals.', tone: 'clay', subs: [], system: true },
+  { key: 'combos', title: 'Combo Deals', crumb: 'Combos', blurb: 'Curated sets priced below buying each item separately.', tone: 'sage', subs: ['Combo deals'], system: true },
 ].map((c) => ({
   ...(c as Category),
   img: CAT_KW[c.key] ? IMG(CAT_KW[c.key], 500, 500) : undefined,
@@ -111,12 +111,10 @@ export const CATEGORIES: Category[] = [
   ).length,
 }));
 
-export const SUBCATEGORIES: Record<string, string[]> = {
-  audio: ['Wireless earbuds', 'Headphones', 'Speakers', 'Neckbands & more'],
-  gadgets: ['Smart watches', 'Smart home', 'Desk & work', 'Drones & cameras'],
-  accessories: ['Chargers & adapters', 'Cables & hubs', 'Power banks', 'Holders & stands'],
-  seasonal: ['eidfest', 'power'],
-};
+/** Derived view of category → subcategories (kept for storefront fallback). */
+export const SUBCATEGORIES: Record<string, string[]> = Object.fromEntries(
+  CATEGORIES.map((c) => [c.key, c.subs ?? []]),
+);
 
 export const CAMPAIGNS: Campaign[] = [
   { key: 'eidfest', title: 'Eid Tech Fest', when: 'Now on', line: 'Earbuds, smartwatches and gift-ready gadgets for the festive season.', tone: 'clay', img: IMG('1606220945770-b5b6c2c55bf1', 700, 700), active: true },
@@ -138,7 +136,7 @@ export const COUPONS: Coupon[] = [
 export const CURATED: string[] = ['a1', 'g1', 'm3', 'a4'];
 
 export const catKeyOf = (key: string): CategoryKey | undefined =>
-  (['audio', 'gadgets', 'accessories', 'seasonal', 'combos'] as CategoryKey[]).find((k) => k === key);
+  CATEGORIES.some((c) => c.key === key) ? key : undefined;
 
 export const totalStock = (p: Product): number =>
   Object.values(p.stock).reduce((a, n) => a + n, 0);

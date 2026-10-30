@@ -2,16 +2,9 @@
 
 import { ImageUp, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { COLOR_SWATCHES, SUBCATEGORIES, type Campaign, type Product } from '@xivoo/shared';
+import { COLOR_SWATCHES, type Campaign, type Category, type Product } from '@xivoo/shared';
 import Modal, { Field, inputCls } from './modal';
 import { ApiError, patch, post, useApi } from '@/lib/api';
-
-const CATS: [string, string][] = [
-  ['audio', 'Audio & Earbuds'],
-  ['gadgets', 'Smart Gadgets'],
-  ['accessories', 'Mobile Accessories'],
-  ['combos', 'Combo Deals'],
-];
 
 const PLACEHOLDER_IMG =
   'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&h=750&fit=crop&auto=format&q=70';
@@ -33,6 +26,8 @@ export default function ProductForm({
   editing: Product | null;
 }) {
   const campaigns = useApi<Campaign[]>('/campaigns');
+  const categories = useApi<Category[]>('/categories');
+  const catOptions = (categories.data ?? []).filter((c) => c.key !== 'seasonal');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [fieldErr, setFieldErr] = useState<Record<string, string>>({});
@@ -147,7 +142,7 @@ export default function ProductForm({
     }
   };
 
-  const subOptions = SUBCATEGORIES[form.cat] ?? [];
+  const subOptions = catOptions.find((c) => c.key === form.cat)?.subs ?? [];
 
   return (
     <Modal open={open} onClose={onClose} title={editing ? `Edit — ${editing.name}` : 'Add product'} wide>
@@ -157,8 +152,8 @@ export default function ProductForm({
         </Field>
         <Field label="Category" error={fieldErr.cat}>
           <select className={inputCls} value={form.cat} onChange={(e) => set('cat', e.target.value)}>
-            {CATS.map(([k, label]) => (
-              <option key={k} value={k}>{label}</option>
+            {catOptions.map((c) => (
+              <option key={c.key} value={c.key}>{c.title}</option>
             ))}
           </select>
         </Field>

@@ -15,11 +15,22 @@ import {
   CreateOrderInput,
   ORDER_STATUSES,
   Order,
+  OrderMeta,
   OrderStatus,
   sizedImg,
   skuOf,
 } from '@xivoo/shared';
 import { StoreService } from './store.service';
+
+/** Fields that must be provided to enter a status (enforced server-side). */
+const REQUIREMENTS: Partial<Record<OrderStatus, { field: keyof OrderMeta; label: string }[]>> = {
+  Shipped: [
+    { field: 'courier', label: 'Courier company' },
+    { field: 'trackingId', label: 'Tracking / consignment ID' },
+  ],
+  Cancelled: [{ field: 'cancelReason', label: 'Cancellation reason' }],
+  Refunded: [{ field: 'refundRef', label: 'Refund reference (bKash/Nagad TxID)' }],
+};
 
 const FORWARD: Record<string, OrderStatus[]> = {
   Pending: ['Confirmed', 'Cancelled'],
@@ -58,7 +69,7 @@ export class OrdersController {
 
   @Get('statuses')
   statuses() {
-    return { pipeline: ORDER_STATUSES, transitions: FORWARD };
+    return { pipeline: ORDER_STATUSES, transitions: FORWARD, requirements: REQUIREMENTS };
   }
 
   @Get(':no')
@@ -72,7 +83,10 @@ export class OrdersController {
   @Patch(':no/status')
   @UseGuards(AuthGuard)
   @Roles('owner', 'manager')
-  async setStatus(@Param('no') no: string, @Body() body: { status?: OrderStatus }) {
+  async setStatus(
+    @Param('no') no: string,
+    @Body() body: { status?: OrderStatus; meta?: OrderMeta },
+  ) {
     await this.store.sync(0);
     const o = await this.store.findOrderFresh(no);
     if (!o) throw new NotFoundException(`No order ${no}`);
@@ -82,6 +96,18 @@ export class OrdersController {
         `Cannot move ${o.no} from "${o.status}" to "${next}". Allowed: ${FORWARD[o.status]?.join(', ') || 'none'}.`,
       );
     }
+    const merged: OrderMeta = { ...o.meta };
+    for (const [k, v] of Object.entries(body.meta ?? {})) {
+      if (typeof v === 'string' && v.trim()) merged[k as keyof OrderMeta] = v.trim();
+    }
+    const missing = (REQUIREMENTS[next] ?? []).filter((r) => !merged[r.field]);
+    if (missing.length) {
+      throw new BadRequestException({
+        message: `"${next}" needs: ${missing.map((m) => m.label).join(', ')}.`,
+        errors: Object.fromEntries(missing.map((m) => [m.field, `${m.label} is required.`])),
+      });
+    }
+    o.meta = merged;
     o.status = next;
     await this.store.persist();
     return o;

@@ -10,15 +10,6 @@ import type { ProductVM } from '@/lib/api';
 import { BagIcon, HeartIcon, LogoMark, SearchIcon } from './icons';
 import { useStore } from './store';
 
-const NAV: [string, string][] = [
-  ['all', 'Shop All'],
-  ['audio', 'Audio'],
-  ['gadgets', 'Gadgets'],
-  ['accessories', 'Accessories'],
-  ['combos', 'Combos'],
-  ['offers', 'Offers'],
-];
-
 interface Props {
   categories: Category[];
   subcategories: Record<string, string[]>;
@@ -77,6 +68,19 @@ export default function Header({ categories, subcategories, campaigns, products 
   const activeKey = pathname === '/' ? 'home' : pathname.startsWith('/c/') ? pathname.split('/')[2]?.split('?')[0] : '';
   const cartCount = cart.reduce((a, l) => a + l.qty, 0);
 
+  // Nav follows the admin-managed categories (seasonal shown as Campaigns when live)
+  const NAV: [string, string][] = [
+    ['all', 'Shop All'],
+    ...categories.filter((c) => c.key !== 'seasonal').map((c) => [c.key, c.crumb] as [string, string]),
+    ...(campaigns.length ? ([['seasonal', 'Campaigns']] as [string, string][]) : []),
+    ['offers', 'Offers'],
+  ];
+
+  const dropdownFor = (k: string): { label: string; href: string }[] =>
+    k === 'seasonal'
+      ? campaigns.map((c) => ({ label: c.title, href: `/c/seasonal?sub=${c.key}` }))
+      : subsFor(k);
+
   return (
     <header className="sticky top-3 z-40 px-4 sm:px-6">
       <div className="mx-auto max-w-[1240px]">
@@ -91,7 +95,7 @@ export default function Header({ categories, subcategories, campaigns, products 
             <nav className="mx-auto hidden items-center gap-1 lg:flex" onMouseLeave={() => setHovered(null)}>
               {NAV.map(([k, label]) => {
                 const active = activeKey === k;
-                const hasMenu = !!subcategories[k];
+                const hasMenu = k === 'seasonal' ? campaigns.length > 0 : (subcategories[k] ?? []).length > 0;
                 return (
                   <Link
                     key={k}
@@ -236,7 +240,7 @@ export default function Header({ categories, subcategories, campaigns, products 
 
           {/* Category dropdown — clean simple list */}
           <AnimatePresence>
-            {menu && subcategories[menu] && !searchOpen && (
+            {menu && !searchOpen && dropdownFor(menu).length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: -6, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -247,7 +251,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                 <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.1em] text-muted-2">
                   {categories.find((c) => c.key === menu)?.title}
                 </p>
-                {subsFor(menu).map((sub) => (
+                {dropdownFor(menu).map((sub) => (
                   <Link
                     key={sub.label}
                     href={sub.href}

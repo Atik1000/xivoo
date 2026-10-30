@@ -2,12 +2,14 @@ import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { createHash } from 'crypto';
 import {
   CAMPAIGNS,
+  CATEGORIES,
   COUPONS,
   PRODUCTS,
   ZONES,
   skuOf,
   sizedImg,
   type Campaign,
+  type Category,
   type Coupon,
   type DeliveryZone,
   type Order,
@@ -39,6 +41,7 @@ interface AppState {
   v: 1;
   savedAt: string;
   products: Product[];
+  categories: Category[];
   coupons: Coupon[];
   campaigns: Campaign[];
   zones: DeliveryZone[];
@@ -56,6 +59,7 @@ const replaceAll = <T,>(target: T[], items: T[]): void => {
 @Injectable()
 export class StoreService implements OnModuleInit {
   readonly products: Product[] = PRODUCTS.map((p) => ({ ...p, stock: { ...p.stock } }));
+  readonly categories: Category[] = CATEGORIES.map((c) => ({ ...c, subs: [...(c.subs ?? [])] }));
   readonly coupons: Coupon[] = COUPONS.map((c) => ({ ...c }));
   readonly campaigns: Campaign[] = CAMPAIGNS.map((c) => ({ ...c }));
   readonly zones: DeliveryZone[] = ZONES.map((z) => ({ ...z }));
@@ -86,6 +90,7 @@ export class StoreService implements OnModuleInit {
     this.lastSync = Date.now();
     if (!s || s.v !== 1) return false;
     replaceAll(this.products, s.products);
+    if (Array.isArray(s.categories)) replaceAll(this.categories, s.categories); // older states lack it
     replaceAll(this.coupons, s.coupons);
     replaceAll(this.campaigns, s.campaigns);
     replaceAll(this.zones, s.zones);
@@ -102,6 +107,7 @@ export class StoreService implements OnModuleInit {
       v: 1,
       savedAt: new Date().toISOString(),
       products: this.products,
+      categories: this.categories,
       coupons: this.coupons,
       campaigns: this.campaigns,
       zones: this.zones,

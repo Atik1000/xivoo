@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { CATEGORIES, StatsSummary, sizedImg } from '@xivoo/shared';
+import { StatsSummary, sizedImg } from '@xivoo/shared';
 import { AuthGuard } from './auth.guard';
 import { StoreService } from './store.service';
 
@@ -74,7 +74,7 @@ export class StatsController {
       byCategory: [...byCatMap.entries()]
         .map(([key, v]) => ({
           key,
-          title: CATEGORIES.find((c) => c.key === key)?.crumb ?? key,
+          title: this.store.categories.find((c) => c.key === key)?.crumb ?? key,
           ...v,
         }))
         .sort((a, b) => b.revenue - a.revenue),

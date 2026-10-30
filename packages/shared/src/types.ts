@@ -1,9 +1,5 @@
-export type CategoryKey =
-  | 'audio'
-  | 'gadgets'
-  | 'accessories'
-  | 'seasonal'
-  | 'combos';
+/** Category keys are data now (admin-managed), not a closed union. */
+export type CategoryKey = string;
 
 export type ToneKey = 'sage' | 'sand' | 'clay' | 'sky' | 'blush' | 'butter' | 'mist';
 
@@ -48,13 +44,17 @@ export interface Product {
 }
 
 export interface Category {
-  key: CategoryKey | 'all' | 'offers';
+  key: string;
   title: string;
   crumb: string;
   blurb: string;
   tone?: ToneKey;
   img?: string;
   count?: number;
+  /** Subcategories shown in nav dropdowns and product forms */
+  subs?: string[];
+  /** seasonal/combos power storefront logic and cannot be deleted */
+  system?: boolean;
 }
 
 export interface Campaign {
@@ -118,6 +118,19 @@ export interface OrderItem {
   img: string;
 }
 
+export interface OrderMeta {
+  /** Courier company (required when moving to Shipped) */
+  courier?: string;
+  /** Courier tracking / consignment id (required when moving to Shipped) */
+  trackingId?: string;
+  /** Required when moving to Cancelled */
+  cancelReason?: string;
+  /** bKash/Nagad/bank reference (required when moving to Refunded) */
+  refundRef?: string;
+  /** Free-form admin note */
+  note?: string;
+}
+
 export interface Order {
   no: string;
   placedAt: string;
@@ -130,6 +143,8 @@ export interface Order {
   discount: number;
   couponCode?: string;
   total: number;
+  /** Fulfilment details collected as the order moves through the pipeline */
+  meta?: OrderMeta;
 }
 
 export interface CreateOrderInput {
