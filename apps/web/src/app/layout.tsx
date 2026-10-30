@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Urbanist } from 'next/font/google';
 import Analytics from '@/components/analytics';
+import BottomNav from '@/components/bottom-nav';
 import ChatButtons from '@/components/chat-buttons';
 import Footer from '@/components/footer';
 import Header, { UtilityBar } from '@/components/header';
@@ -44,6 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header categories={categories} subcategories={subcategories} campaigns={campaigns} products={products} />
           <main>{children}</main>
           <Footer />
+          <BottomNav />
           <ChatButtons />
           <Analytics />
         </StoreProvider>

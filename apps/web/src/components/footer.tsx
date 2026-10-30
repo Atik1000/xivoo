@@ -25,7 +25,7 @@ const COMPANY = [
 
 export default function Footer() {
   return (
-    <footer className="mt-16 bg-dark text-footer-text">
+    <footer className="mt-16 bg-dark pb-16 text-footer-text md:pb-0">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-6 py-14 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
         <div>
           <span className="inline-block rounded-[10px] bg-white px-3 py-2">

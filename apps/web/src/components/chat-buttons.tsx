@@ -8,7 +8,7 @@ const MESSENGER = process.env.NEXT_PUBLIC_MESSENGER_URL ?? 'https://m.me/xivoobd
 /** Floating order-by-chat buttons (set NEXT_PUBLIC_WHATSAPP_URL / NEXT_PUBLIC_MESSENGER_URL). */
 export default function ChatButtons() {
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+    <div className="fixed bottom-20 right-4 z-50 flex flex-col gap-3 md:bottom-6 md:right-6">
       <motion.a
         href={MESSENGER}
         target="_blank"
