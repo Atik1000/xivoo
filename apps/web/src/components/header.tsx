@@ -33,6 +33,40 @@ export default function Header({ categories, subcategories, campaigns, products 
   const [exploreOpen, setExploreOpen] = useState(false);
   const [flyKey, setFlyKey] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTimers = () => {
+    if (openTimer.current) clearTimeout(openTimer.current);
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  };
+
+  /** Hover intent: open after a beat from rest; switch instantly while a menu is up. */
+  const intentOpenMenu = (key: string | null) => {
+    clearTimers();
+    if (key === null) return;
+    if (menu) setMenu(key);
+    else openTimer.current = setTimeout(() => setMenu(key), 140);
+  };
+
+  const intentCloseMenu = () => {
+    clearTimers();
+    closeTimer.current = setTimeout(() => setMenu(null), 170);
+  };
+
+  const intentOpenExplore = () => {
+    clearTimers();
+    if (exploreOpen) return;
+    openTimer.current = setTimeout(() => setExploreOpen(true), 120);
+  };
+
+  const intentCloseExplore = () => {
+    clearTimers();
+    closeTimer.current = setTimeout(() => {
+      setExploreOpen(false);
+      setFlyKey(null);
+    }, 170);
+  };
 
   useEffect(() => {
     setMenu(null);
@@ -200,19 +234,16 @@ export default function Header({ categories, subcategories, campaigns, products 
       </div>
 
       {/* Tier 3 — category menu bar */}
-      <div className="relative rounded-b-[20px] bg-dark text-white shadow-[0_14px_30px_-18px_rgba(0,0,0,.6)]" onMouseLeave={() => setMenu(null)}>
+      <div className="relative rounded-b-[20px] bg-dark text-white shadow-[0_14px_30px_-18px_rgba(0,0,0,.6)]" onMouseLeave={intentCloseMenu}>
         <div className="mx-auto flex max-w-[1280px] items-center gap-1 px-4 sm:px-6">
           {/* Explore all dropdown — dazzle-style rows with flyout */}
           <div
             className="relative shrink-0"
-            onMouseEnter={() => setExploreOpen(true)}
-            onMouseLeave={() => {
-              setExploreOpen(false);
-              setFlyKey(null);
-            }}
+            onMouseEnter={intentOpenExplore}
+            onMouseLeave={intentCloseExplore}
           >
             <button
-              onClick={() => setExploreOpen((v) => !v)}
+              onClick={() => { clearTimers(); setExploreOpen((v) => !v); }}
               aria-expanded={exploreOpen}
               className="btn-accent my-2 uppercase"
             >
@@ -222,11 +253,12 @@ export default function Header({ categories, subcategories, campaigns, products 
             <AnimatePresence>
               {exploreOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.14 }}
-                  className="absolute left-0 top-full z-50 w-[280px] rounded-b-[12px] border border-line bg-surface py-1.5 shadow-[0_28px_60px_-20px_rgba(0,0,0,.55)]"
+                  initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                  transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute left-0 top-full z-50 w-[280px] origin-top rounded-b-[12px] border border-line bg-surface py-1.5 shadow-[0_28px_60px_-20px_rgba(0,0,0,.55)]"
+                  onMouseEnter={clearTimers}
                 >
                   {categories.map((c) => {
                     const subs = subcategories[c.key] ?? [];
@@ -300,7 +332,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                 <Link
                   key={c.key}
                   href={`/c/${c.key}`}
-                  onMouseEnter={() => setMenu(hasMenu ? c.key : null)}
+                  onMouseEnter={() => intentOpenMenu(hasMenu ? c.key : null)}
                   className={`whitespace-nowrap border-b-2 px-3.5 py-3 text-[13.5px] font-semibold transition-colors ${
                     active ? 'border-[#D4A97A] text-[#D4A97A]' : 'border-transparent text-white/75 hover:text-[#BA975F]'
                   }`}
@@ -320,12 +352,14 @@ export default function Header({ categories, subcategories, campaigns, products 
         <AnimatePresence>
           {menu && (subcategories[menu] ?? []).length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.14 }}
-              className="absolute left-1/2 top-full z-40 w-[264px] -translate-x-1/2 rounded-[12px] border border-line bg-surface py-1.5 shadow-[0_28px_60px_-20px_rgba(0,0,0,.55)]"
+              initial={{ opacity: 0, y: 12, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.98 }}
+              transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute left-1/2 top-full z-40 w-[264px] origin-top rounded-[12px] border border-line bg-surface py-1.5 shadow-[0_28px_60px_-20px_rgba(0,0,0,.55)]"
+              onMouseEnter={clearTimers}
             >
+             <motion.div key={menu} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.16 }}>
               <p className="px-4 pb-1 pt-2 text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted-2">
                 {categories.find((c) => c.key === menu)?.title}
               </p>
@@ -345,6 +379,7 @@ export default function Header({ categories, subcategories, campaigns, products 
               >
                 View all →
               </Link>
+             </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
