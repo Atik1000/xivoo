@@ -18,7 +18,7 @@ import {
 const tuned =
   (Icon: LucideIcon) =>
   // eslint-disable-next-line react/display-name
-  (p: LucideProps) => <Icon size={22} strokeWidth={1.8} absoluteStrokeWidth {...p} />;
+  (p: LucideProps) => <Icon size={22} strokeWidth={1.2} {...p} />;
 
 export const SearchIcon = tuned(Search);
 export const HeadsetIcon = tuned(Headset);
@@ -32,7 +32,7 @@ export const SwapIcon = tuned(ArrowLeftRight);
 export const ShieldIcon = tuned(ShieldCheck);
 
 export const HeartIcon = ({ filled, ...p }: LucideProps & { filled?: boolean }) => (
-  <Heart size={22} strokeWidth={1.8} absoluteStrokeWidth fill={filled ? 'currentColor' : 'none'} {...p} />
+  <Heart size={22} strokeWidth={1.2} fill={filled ? 'currentColor' : 'none'} {...p} />
 );
 
 /** Brand mark: the Xivoo X — black arms with the orange swoosh. */

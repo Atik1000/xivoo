@@ -112,6 +112,29 @@ body {
   background-size: 44px 44px;
   mask-image: radial-gradient(120% 90% at 50% 0%, black 30%, transparent 85%);
 }
+/* Accent CTA recipe (light caramel fill, dark label, 9px radius) */
+@layer components {
+  .btn-accent {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #D4A97A;
+    color: #16181A;
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: 0.025em;
+    padding: 14px 18px;
+    border-radius: 9px;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+  }
+  .btn-accent:hover {
+    background: #C89A6B;
+  }
+  .btn-accent:active {
+    transform: scale(0.97);
+  }
+}
+
 .glow-brand {
   box-shadow: 0 0 0 1px rgba(203, 132, 59, 0.35), 0 10px 40px -8px rgba(203, 132, 59, 0.55);
 }

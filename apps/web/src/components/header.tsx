@@ -74,13 +74,13 @@ export default function Header({ categories, subcategories, campaigns, products 
       <div className="border-b border-white/10 bg-dark text-[12px] text-white/60">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-4 py-1.5 sm:px-6">
           <span className="flex gap-4">
-            <Link href="/faq" className="hover:text-white">FAQ</Link>
-            <Link href="/shipping" className="hover:text-white">Shipping Policy</Link>
-            <Link href="/returns" className="hidden hover:text-white sm:inline">Return &amp; Refund</Link>
+            <Link href="/faq" className="transition-colors hover:text-[#BA975F]">FAQ</Link>
+            <Link href="/shipping" className="transition-colors hover:text-[#BA975F]">Shipping Policy</Link>
+            <Link href="/returns" className="hidden transition-colors hover:text-[#BA975F] sm:inline">Return &amp; Refund</Link>
           </span>
           <span className="flex gap-4">
-            <a href="tel:01XXXXXXXXX" className="font-semibold text-white/80 hover:text-white">☎ 01XXX-XXXXXX</a>
-            <Link href="/contact" className="hover:text-white">Contact Us</Link>
+            <a href="tel:01XXXXXXXXX" className="font-semibold text-white/80 transition-colors hover:text-[#BA975F]">☎ 01XXX-XXXXXX</a>
+            <Link href="/contact" className="transition-colors hover:text-[#BA975F]">Contact Us</Link>
           </span>
         </div>
       </div>
@@ -115,7 +115,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                 aria-label="Search products"
                 className="w-full min-w-0 bg-transparent text-[14px] text-ink outline-none placeholder:text-muted-2"
               />
-              <button type="submit" aria-label="Search" className="grid h-9 w-11 shrink-0 place-items-center rounded-[8px] bg-brand text-white transition-colors hover:opacity-90">
+              <button type="submit" aria-label="Search" className="grid h-9 w-11 shrink-0 place-items-center rounded-[8px] bg-[#D4A97A] text-[#16181A] transition-colors hover:bg-[#C89A6B]">
                 <SearchIcon width={17} height={17} />
               </button>
             </form>
@@ -169,7 +169,7 @@ export default function Header({ categories, subcategories, campaigns, products 
             <button
               aria-label="Wishlist"
               onClick={() => say(wish.length ? `${wish.length} item${wish.length > 1 ? 's' : ''} in your wishlist.` : 'Your wishlist is empty — tap a heart to save items.')}
-              className="relative grid h-10 w-10 place-items-center rounded-xl transition-colors hover:bg-surface-2"
+              className="relative grid h-[54px] w-[54px] place-items-center rounded-xl bg-surface-2 transition-all duration-200 hover:bg-surface-2/80"
             >
               <HeartIcon width={19} height={19} />
               {wish.length > 0 && (
@@ -181,7 +181,7 @@ export default function Header({ categories, subcategories, campaigns, products 
             <Link
               href="/cart"
               aria-label="Cart"
-              className="flex h-10 items-center gap-2 rounded-[10px] bg-dark px-4 text-[13.5px] font-bold text-white transition-colors hover:bg-brand"
+              className="btn-accent"
             >
               <BagIcon width={17} height={17} />
               <span className="max-sm:hidden">Cart</span>
@@ -214,7 +214,7 @@ export default function Header({ categories, subcategories, campaigns, products 
             <button
               onClick={() => setExploreOpen((v) => !v)}
               aria-expanded={exploreOpen}
-              className="flex items-center gap-2 rounded-bl-[20px] bg-brand px-4 py-3.5 font-display text-[12.5px] font-bold uppercase tracking-[0.06em] text-white transition-colors hover:opacity-90"
+              className="btn-accent my-2 uppercase"
             >
               ☰ Explore All
               <span className={`text-[9px] transition-transform duration-200 ${exploreOpen ? 'rotate-180' : ''}`}>▾</span>
@@ -302,7 +302,7 @@ export default function Header({ categories, subcategories, campaigns, products 
                   href={`/c/${c.key}`}
                   onMouseEnter={() => setMenu(hasMenu ? c.key : null)}
                   className={`whitespace-nowrap border-b-2 px-3.5 py-3 text-[13.5px] font-semibold transition-colors ${
-                    active ? 'border-brand text-brand' : 'border-transparent text-white/75 hover:text-brand'
+                    active ? 'border-[#D4A97A] text-[#D4A97A]' : 'border-transparent text-white/75 hover:text-[#BA975F]'
                   }`}
                 >
                   {c.crumb}
