@@ -31,6 +31,7 @@ export default function Header({ categories, subcategories, campaigns, products 
   const [searchOpen, setSearchOpen] = useState(false);
   const [menu, setMenu] = useState<string | null>(null);
   const [exploreOpen, setExploreOpen] = useState(false);
+  const [flyKey, setFlyKey] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -201,14 +202,22 @@ export default function Header({ categories, subcategories, campaigns, products 
       {/* Tier 3 — category menu bar */}
       <div className="relative rounded-b-[20px] bg-dark text-white shadow-[0_14px_30px_-18px_rgba(0,0,0,.6)]" onMouseLeave={() => setMenu(null)}>
         <div className="mx-auto flex max-w-[1280px] items-center gap-1 px-4 sm:px-6">
-          {/* Explore all dropdown */}
-          <div className="relative shrink-0">
+          {/* Explore all dropdown — dazzle-style rows with flyout */}
+          <div
+            className="relative shrink-0"
+            onMouseEnter={() => setExploreOpen(true)}
+            onMouseLeave={() => {
+              setExploreOpen(false);
+              setFlyKey(null);
+            }}
+          >
             <button
               onClick={() => setExploreOpen((v) => !v)}
               aria-expanded={exploreOpen}
               className="flex items-center gap-2 rounded-bl-[20px] bg-brand px-4 py-3.5 font-display text-[12.5px] font-bold uppercase tracking-[0.06em] text-white transition-colors hover:opacity-90"
             >
               ☰ Explore All
+              <span className={`text-[9px] transition-transform duration-200 ${exploreOpen ? 'rotate-180' : ''}`}>▾</span>
             </button>
             <AnimatePresence>
               {exploreOpen && (
@@ -217,19 +226,64 @@ export default function Header({ categories, subcategories, campaigns, products 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.14 }}
-                  className="absolute left-0 top-full z-50 w-[260px] rounded-b-[10px] border border-line bg-surface p-2 shadow-[0_24px_50px_-22px_rgba(17,19,21,.35)]"
+                  className="absolute left-0 top-full z-50 w-[280px] rounded-b-[12px] border border-line bg-surface py-1.5 shadow-[0_28px_60px_-20px_rgba(0,0,0,.55)]"
                 >
-                  {categories.map((c) => (
-                    <Link
-                      key={c.key}
-                      href={`/c/${c.key}`}
-                      className="flex items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink"
-                    >
-                      {c.title}
-                      <span className="text-[11px] text-muted-2">{c.count}</span>
-                    </Link>
-                  ))}
-                  <Link href="/c/all" className="block rounded-xl px-3 py-2.5 text-[13px] font-bold text-brand hover:bg-brand-25">
+                  {categories.map((c) => {
+                    const subs = subcategories[c.key] ?? [];
+                    return (
+                      <div key={c.key} className="relative px-1.5" onMouseEnter={() => setFlyKey(subs.length ? c.key : null)}>
+                        <Link
+                          href={`/c/${c.key}`}
+                          className={`flex items-center gap-3 rounded-[8px] px-2.5 py-2 transition-colors ${
+                            flyKey === c.key ? 'bg-brand-25 text-brand' : 'text-ink-2 hover:bg-brand-25 hover:text-brand'
+                          }`}
+                        >
+                          <span className="relative block h-8 w-8 shrink-0 overflow-hidden rounded-[6px] bg-surface-2">
+                            {c.img && <PImg src={c.img} alt="" fill sizes="32px" className="object-cover" />}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold">{c.title}</span>
+                          <span className="text-[11px] text-muted-2">{c.count}</span>
+                          {subs.length > 0 && (
+                            <span className={`text-[13px] transition-transform duration-200 ${flyKey === c.key ? 'translate-x-0.5 text-brand' : 'text-muted-2'}`}>›</span>
+                          )}
+                        </Link>
+                        {/* right flyout with subcategories */}
+                        <AnimatePresence>
+                          {flyKey === c.key && subs.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -8 }}
+                              transition={{ duration: 0.13 }}
+                              className="absolute left-full top-0 z-50 ml-1 w-[240px] rounded-[12px] border border-line bg-surface py-1.5 shadow-[0_28px_60px_-20px_rgba(0,0,0,.55)]"
+                            >
+                              <p className="px-4 pb-1 pt-2 text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted-2">{c.title}</p>
+                              {subs.map((sub) => (
+                                <Link
+                                  key={sub}
+                                  href={`/c/${c.key}?sub=${encodeURIComponent(sub)}`}
+                                  className="mx-1.5 flex items-center justify-between rounded-[8px] px-2.5 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-brand-25 hover:text-brand"
+                                >
+                                  {sub}
+                                  <span className="text-[12px] text-muted-2">›</span>
+                                </Link>
+                              ))}
+                              <Link
+                                href={`/c/${c.key}`}
+                                className="mx-1.5 mt-1 block rounded-[8px] border-t border-line-2 px-2.5 py-2 text-[12.5px] font-bold text-brand hover:bg-brand-25"
+                              >
+                                View all {c.crumb} →
+                              </Link>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
+                  <Link
+                    href="/c/all"
+                    className="mx-1.5 mt-1 block rounded-[8px] border-t border-line-2 px-2.5 py-2.5 text-[12.5px] font-bold text-brand hover:bg-brand-25"
+                  >
                     Shop All Products →
                   </Link>
                 </motion.div>
@@ -270,25 +324,27 @@ export default function Header({ categories, subcategories, campaigns, products 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.14 }}
-              className="absolute left-1/2 top-full z-40 w-[264px] -translate-x-1/2 rounded-[10px] border border-line bg-surface p-2 shadow-[0_24px_50px_-22px_rgba(17,19,21,.35)]"
+              className="absolute left-1/2 top-full z-40 w-[264px] -translate-x-1/2 rounded-[12px] border border-line bg-surface py-1.5 shadow-[0_28px_60px_-20px_rgba(0,0,0,.55)]"
             >
-              <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.1em] text-muted-2">
+              <p className="px-4 pb-1 pt-2 text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted-2">
                 {categories.find((c) => c.key === menu)?.title}
               </p>
               {subsFor(menu).map((sub) => (
                 <Link
                   key={sub.label}
                   href={sub.href}
-                  className="block rounded-xl px-3 py-2 text-[14px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink"
+                  className="mx-1.5 flex items-center justify-between rounded-[8px] px-2.5 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-brand-25 hover:text-brand"
                 >
                   {sub.label}
+                  <span className="text-[12px] text-muted-2">›</span>
                 </Link>
               ))}
-              <div className="mt-1 border-t border-line-2 pt-1">
-                <Link href={`/c/${menu}`} className="block rounded-xl px-3 py-2 text-[13px] font-bold text-brand hover:bg-brand-25">
-                  View all →
-                </Link>
-              </div>
+              <Link
+                href={`/c/${menu}`}
+                className="mx-1.5 mt-1 block rounded-[8px] border-t border-line-2 px-2.5 py-2 text-[12.5px] font-bold text-brand hover:bg-brand-25"
+              >
+                View all →
+              </Link>
             </motion.div>
           )}
         </AnimatePresence>
